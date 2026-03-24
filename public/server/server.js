@@ -30,4 +30,4 @@ const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Erro";
 res.json({reply});
 });
 
-app.listen(3000);
+app.listen(process.env.PORT || 3000);
