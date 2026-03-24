@@ -5,22 +5,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NEXUS IA</title>
 <style>
-body{margin:0;font-family:Arial;background:linear-gradient(135deg,#ff00cc,#3333ff,#00ffcc);color:#fff;display:flex;height:100vh}
-.sidebar{width:260px;background:rgba(0,0,0,0.6);padding:20px;backdrop-filter:blur(10px)}
-.chat{flex:1;display:flex;flex-direction:column}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:radial-gradient(circle at top,#0a0000,#000000 80%);color:#fff;display:flex;height:100vh;overflow:hidden}
+.sidebar{width:260px;background:rgba(20,0,0,0.8);padding:20px;border-right:1px solid rgba(255,0,0,0.2)}
+.chat{flex:1;display:flex;flex-direction:column;position:relative}
 #messages{flex:1;padding:20px;overflow:auto}
-.msg{margin-bottom:15px;padding:10px;border-radius:10px;max-width:70%}
-.user{background:#00ffcc;color:#000;margin-left:auto}
-.bot{background:#222}
-.inputArea{display:flex;padding:10px;background:#111}
-input{flex:1;padding:12px;border:none;border-radius:8px}
-button{padding:12px;margin-left:5px;border:none;border-radius:8px;background:#00ffcc;cursor:pointer}
-.notify{position:fixed;top:20px;right:20px;background:#000;padding:20px;border-radius:10px;display:none}
+.msg{margin-bottom:15px;padding:12px;border-radius:12px;max-width:70%;animation:fadeIn .3s ease}
+.user{background:#ff0033;color:#fff;margin-left:auto}
+.bot{background:#1a0000;border:1px solid rgba(255,0,0,0.2)}
+.inputArea{display:flex;padding:10px;background:#050000;border-top:1px solid rgba(255,0,0,0.2)}
+input{flex:1;padding:12px;border:none;border-radius:8px;background:#0a0000;color:#fff}
+button{padding:12px;margin-left:5px;border:none;border-radius:8px;background:#ff0033;color:#fff;cursor:pointer;transition:.2s}
+button:hover{transform:scale(1.05)}
+.notify, .registerModal{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.4s}
+.notify.active, .registerModal.active{opacity:1;pointer-events:auto}
+.card{background:#0a0000;padding:30px;border-radius:15px;box-shadow:0 0 30px rgba(255,0,0,0.2);animation:slideUp .4s ease}
+.card input{margin-bottom:10px;width:100%}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
 </style>
 </head>
 <body>
 <div class="sidebar">
-<h2>NEXUS</h2>
+<h2 style="color:#ff0033">NEXUS</h2>
 </div>
 <div class="chat">
 <div id="messages"></div>
@@ -28,18 +35,33 @@ button{padding:12px;margin-left:5px;border:none;border-radius:8px;background:#00
 <input id="input" placeholder="Digite sua mensagem...">
 <button onclick="sendMessage()">Enviar</button>
 </div>
-</div>
-<div id="notify" class="notify">
-<h3>NEXUS INFORMA</h3>
-<p>Você precisa se registrar para usar o chat.</p>
-<button onclick="register()">REGISTRAR ME</button>
-</div>
-<script>
-const API_KEY = "COLOQUE_SUA_KEY_AQUI";
 
+<div id="notify" class="notify">
+<div class="card">
+<h3>NEXUS INFORMA</h3>
+<p>Você precisa se registrar para usar o chat</p>
+<button onclick="openRegister()">REGISTRAR</button>
+</div>
+</div>
+
+<div id="register" class="registerModal">
+<div class="card">
+<h2>Registro</h2>
+<input id="email" placeholder="Email">
+<input id="senha" type="password" placeholder="Senha">
+<input id="codigo" readonly placeholder="Código">
+<button onclick="gerarCodigo()">Gerar Código</button>
+<p style="font-size:12px">Anote o código para recuperação</p>
+<button onclick="registrar()">Criar Conta</button>
+</div>
+</div>
+
+</div>
+
+<script>
 function sendMessage(){
 if(!localStorage.getItem("user")){
-document.getElementById("notify").style.display="block";
+document.getElementById("notify").classList.add("active");
 return;
 }
 const input=document.getElementById("input");
@@ -48,16 +70,15 @@ addMessage(text,"user");
 input.value="";
 addMessage("🤖 Nexus está digitando...","bot");
 
-fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${API_KEY}`,{
+fetch("/api/chat",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
-body:JSON.stringify({contents:[{parts:[{text:text}]}]})
+body:JSON.stringify({message:text})
 })
 .then(r=>r.json())
 .then(data=>{
-document.querySelectorAll(".bot")[document.querySelectorAll(".bot").length-1].remove();
-const reply=data.candidates?.[0]?.content?.parts?.[0]?.text||"Erro";
-addMessage(reply,"bot");
+document.querySelectorAll(".bot").pop().remove();
+addMessage(data.reply,"bot");
 });
 }
 
@@ -68,13 +89,23 @@ div.innerText=text;
 document.getElementById("messages").appendChild(div);
 }
 
-function register(){
-const email=prompt("Email:");
-const senha=prompt("Senha:");
-const codigo=Math.floor(10000000+Math.random()*90000000);
-alert("Seu código: "+codigo);
+function openRegister(){
+document.getElementById("notify").classList.remove("active");
+document.getElementById("register").classList.add("active");
+}
+
+function gerarCodigo(){
+const code=Math.floor(10000000+Math.random()*90000000);
+document.getElementById("codigo").value=code;
+}
+
+function registrar(){
+const email=document.getElementById("email").value;
+const senha=document.getElementById("senha").value;
+const codigo=document.getElementById("codigo").value;
+if(!email||!senha||!codigo)return;
 localStorage.setItem("user",JSON.stringify({email,senha,codigo}));
-document.getElementById("notify").style.display="none";
+document.getElementById("register").classList.remove("active");
 }
 </script>
 </body>
