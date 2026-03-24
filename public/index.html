@@ -110,7 +110,6 @@ body {
     .planet2{width:40px;height:40px;}
 }
 </style>
-</head>
 <body>
 
 <!-- FUNDO ESPACIAL 4K -->
@@ -186,50 +185,133 @@ function createStars(){
 }
 
 // ===== AUTH =====
+const registerBox=document.getElementById('registerBox');
+const loginBox=document.getElementById('loginBox');
+const messagesDiv=document.getElementById('messages');
+const input=document.getElementById('input');
+const sendBtn=document.getElementById('sendBtn');
+const chatList=document.getElementById('chatList');
+let currentChatId=null;
+
 function checkAuth(){
     const users=JSON.parse(localStorage.getItem("users")||"[]");
     if(users.length===0){ registerBox.style.display="flex"; } 
     else if(!localStorage.getItem("user")){ loginBox.style.display="flex"; }
+    else{ loadChats(); }
 }
 
 function register(){
     const u=regUser.value, p=regPass.value;
     if(!u||!p) return alert("Preencha todos os campos!");
     let users=JSON.parse(localStorage.getItem("users")||"[]");
+    if(users.find(x=>x.user===u)) return alert("Usuário já existe!");
     users.push({user:u,pass:p});
     localStorage.setItem("users",JSON.stringify(users));
     alert("Registro realizado!");
-    registerBox.style.display="none"; loginBox.style.display="flex";
+    registerBox.style.display="none"; 
+    loginBox.style.display="flex";
 }
+
 function login(){
     const u=user.value, p=pass.value;
     let users=JSON.parse(localStorage.getItem("users")||"[]");
     const found=users.find(x=>x.user===u&&x.pass===p);
-    if(found){ localStorage.setItem("user",u); loginBox.style.display="none"; } 
-    else{ error.textContent="Usuário ou senha incorretos!"; }
+    if(found){ 
+        localStorage.setItem("user",u); 
+        loginBox.style.display="none"; 
+        loadChats();
+    } else{ document.getElementById('error').textContent="Usuário ou senha incorretos!"; }
 }
 function showRegister(){ loginBox.style.display="none"; registerBox.style.display="flex"; }
 function showLogin(){ registerBox.style.display="none"; loginBox.style.display="flex"; }
 
 // ===== CHAT =====
-const messagesDiv=document.getElementById('messages');
-const input=document.getElementById('input');
-const sendBtn=document.getElementById('sendBtn');
 function appendMessage(text,sender){
     const msg=document.createElement('div');
     msg.className='msg '+sender;
-    msg.textContent=text;
+    msg.textContent='';
     messagesDiv.appendChild(msg);
     messagesDiv.scrollTop=messagesDiv.scrollHeight;
+    if(sender==='bot'){ typeWriter(msg,text); } else { msg.textContent=text; messagesDiv.scrollTop=messagesDiv.scrollHeight; }
 }
+
+// ===== TYPING EFFECT =====
+function typeWriter(el,text){
+    let i=0;
+    const interval=setInterval(()=>{
+        el.textContent+=text.charAt(i);
+        i++;
+        messagesDiv.scrollTop=messagesDiv.scrollHeight;
+        if(i>=text.length) clearInterval(interval);
+    },25);
+}
+
+// ===== CHAT STORAGE =====
+function getChats(){ 
+    const user=localStorage.getItem('user'); 
+    return JSON.parse(localStorage.getItem('chats_'+user)||'[]'); 
+}
+function saveChats(chats){ 
+    const user=localStorage.getItem('user'); 
+    localStorage.setItem('chats_'+user,JSON.stringify(chats)); 
+}
+function loadChats(){
+    chatList.innerHTML='';
+    const chats=getChats();
+    chats.forEach(chat=>{
+        const div=document.createElement('div');
+        div.className='chatItem';
+        div.textContent=chat.title;
+        div.onclick=()=>{ loadChat(chat.id); };
+        chatList.appendChild(div);
+    });
+    if(chats.length>0){ loadChat(chats[chats.length-1].id); }
+}
+function loadChat(id){
+    currentChatId=id;
+    const chats=getChats();
+    const chat=chats.find(c=>c.id===id);
+    messagesDiv.innerHTML='';
+    if(chat){
+        chat.messages.forEach(m=>appendMessage(m.text,m.sender));
+    }
+}
+function newChat(){
+    const chats=getChats();
+    const id=Date.now();
+    const title='Chat '+(chats.length+1);
+    chats.push({id,title,messages:[]});
+    saveChats(chats);
+    loadChats();
+}
+function clearChats(){
+    if(confirm('Deseja limpar todos os chats?')){
+        localStorage.removeItem('chats_'+localStorage.getItem('user'));
+        chatList.innerHTML='';
+        messagesDiv.innerHTML='';
+        currentChatId=null;
+    }
+}
+function shareCurrent(){
+    const chats=getChats();
+    const chat=chats.find(c=>c.id===currentChatId);
+    if(chat){
+        const txt=chat.messages.map(m=>m.sender.toUpperCase()+': '+m.text).join('\n');
+        navigator.clipboard.writeText(txt).then(()=>alert('Chat copiado para a área de transferência!'));
+    } else alert('Nenhum chat selecionado');
+}
+
+// ===== SEND MESSAGE =====
 async function sendMessage(){
     const t=input.value.trim();
-    if(!t) return;
+    if(!t || currentChatId===null) return;
     appendMessage(t,'user');
     input.value='';
     sendBtn.disabled=true;
     appendMessage('Digitando...','bot');
+
     try{
+        // Aqui você coloca seu fetch real para /api/chat.js
         const res=await fetch('/api/chat.js',{
             method:'POST',
             headers:{'Content-Type':'application/json'},
@@ -237,16 +319,20 @@ async function sendMessage(){
         });
         const data=await res.json();
         const lastBot=document.querySelectorAll('.bot');
-        lastBot[lastBot.length-1].textContent=data.reply||"Erro na resposta";
+        lastBot[lastBot.length-1].textContent=''; // Limpa "Digitando..."
+        typeWriter(lastBot[lastBot.length-1],data.reply||'Erro na resposta');
+
+        // Salva no chat
+        const chats=getChats();
+        const chat=chats.find(c=>c.id===currentChatId);
+        chat.messages.push({sender:'user',text:t});
+        chat.messages.push({sender:'bot',text:data.reply||'Erro na resposta'});
+        saveChats(chats);
     }catch(e){ console.error(e); alert("Erro ao enviar a mensagem"); }
     sendBtn.disabled=false;
 }
 
-// ===== CHATS =====
-function newChat(){ messagesDiv.innerHTML=''; }
-function clearChats(){ chatList.innerHTML=''; }
-function shareCurrent(){ alert("Função de compartilhar ainda não implementada"); }
-
+// ===== INIT =====
 window.onload=function(){ createStars(); checkAuth(); }
 </script>
 </body>
