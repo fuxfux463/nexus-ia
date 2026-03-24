@@ -4,126 +4,86 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NEXUS IA</title>
-
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial;background:#f5f9ff;color:#111;display:flex;height:100vh}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+body{display:flex;flex-direction:row;height:100vh;background:#f0f4ff;color:#111}
 
 /* SIDEBAR */
 .sidebar{
-width:240px;
-background:#ffffff;
-border-right:1px solid #ddd;
-padding:10px;
-display:flex;
-flex-direction:column;
+background:#ffffff;border-right:1px solid #ddd;
+display:flex;flex-direction:column;padding:10px;
+flex-shrink:0;
+width:220px;
+transition:width 0.3s;
 }
-
 .logo{
-font-size:26px;
-font-weight:bold;
-color:#007bff;
-display:flex;
-align-items:center;
-gap:5px;
+font-size:28px;font-weight:bold;color:#007bff;
+display:flex;align-items:center;gap:5px;margin-bottom:10px;
 }
-
-/* lâmpada animada */
-.bulb{
-animation:blink 1s infinite;
-}
-@keyframes blink{
-0%,100%{opacity:1}
-50%{opacity:0.3}
-}
+.bulb{animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
 
 .menu button{
-margin-top:5px;
-padding:8px;
-background:#007bff;
-color:#fff;
-border:none;
-cursor:pointer;
-font-size:13px;
+margin-top:5px;padding:8px;background:#007bff;color:#fff;border:none;cursor:pointer;font-size:12px;
+width:100%;
 }
 
-/* CHAT LIST */
 .chatList{flex:1;overflow:auto;margin-top:10px}
-.chatItem{
-padding:6px;
-border-bottom:1px solid #eee;
-cursor:pointer;
-font-size:13px;
-}
+.chatItem{padding:6px;border-bottom:1px solid #eee;cursor:pointer;font-size:13px}
 
 /* CHAT */
 .chat{flex:1;display:flex;flex-direction:column}
 #messages{flex:1;padding:10px;overflow:auto}
 
-.msg{
-margin-bottom:8px;
-padding:8px;
-border-radius:8px;
-max-width:70%;
-font-size:13px;
-}
-
+.msg{margin-bottom:8px;padding:8px;border-radius:8px;max-width:70%;font-size:13px;word-wrap:break-word}
 .user{background:#007bff;color:#fff;margin-left:auto}
 .bot{background:#e9f1ff}
 
+/* INPUT AREA */
 .inputArea{
-display:flex;
-padding:8px;
-background:#fff;
-border-top:1px solid #ddd;
+display:flex;padding:8px;background:#d0e0ff;border-top:1px solid #aaa;position:relative;
 }
-
-input{
-flex:1;
-padding:8px;
-border:1px solid #ccc;
+.inputArea input{
+flex:1;padding:10px;background:#aac0ff;border:1px solid #888;color:#111;border-radius:6px;font-size:13px;
 }
-
-button{
-padding:8px;
-margin-left:5px;
-background:#007bff;
-color:#fff;
-border:none;
-cursor:pointer;
+.inputArea input::placeholder{
+color:#444;animation:blinkPlaceholder 2s linear infinite;
 }
+@keyframes blinkPlaceholder{0%,100%{opacity:1}50%{opacity:0.4}}
+.inputArea button{padding:10px;margin-left:5px;background:#007bff;color:#fff;border:none;cursor:pointer;font-size:13px}
 
-/* OVERLAY */
+/* OVERLAYS */
 .overlay{
-position:fixed;
-top:0;left:0;
-width:100%;height:100%;
-background:rgba(0,0,0,0.9);
-display:none;
-justify-content:center;
-align-items:center;
-z-index:999;
+position:fixed;top:0;left:0;width:100%;height:100%;
+background:rgba(0,0,0,0.9);display:none;
+justify-content:center;align-items:center;z-index:999;
 }
-
 .box{
-background:#fff;
-padding:15px;
-border-radius:8px;
-width:250px;
-display:flex;
-flex-direction:column;
-gap:8px;
-text-align:center;
+background:#fff;padding:15px;border-radius:8px;width:90%;
+max-width:260px;
+display:flex;flex-direction:column;gap:8px;text-align:center;
 }
+.box input{padding:6px;border:1px solid #ccc;border-radius:5px}
+.box button{padding:6px;background:#007bff;color:#fff;border:none;border-radius:5px;cursor:pointer}
+.link{color:#007bff;cursor:pointer;font-size:12px;text-decoration:underline}
 
-.box input{padding:6px}
-.box button{background:#007bff;color:#fff;border:none;padding:6px}
-.link{color:#007bff;cursor:pointer;font-size:12px}
+/* RESPONSIVO */
+@media(max-width:768px){
+body{flex-direction:column}
+.sidebar{width:100%;flex-direction:row;overflow-x:auto}
+.chat{flex:1;width:100%}
+.chatList{display:flex;flex-direction:row;overflow-x:auto;margin-top:0}
+.chatItem{margin-right:5px;border-bottom:none;border-right:1px solid #eee;white-space:nowrap}
+.inputArea{flex-direction:column}
+.inputArea input{margin-bottom:5px;width:100%}
+.inputArea button{width:100%}
+}
 </style>
 </head>
 
 <body>
 
+<!-- SIDEBAR -->
 <div class="sidebar">
 <div class="logo">NEXUS <span class="bulb">💡</span></div>
 
@@ -136,12 +96,23 @@ text-align:center;
 <div class="chatList" id="chatList"></div>
 </div>
 
+<!-- CHAT -->
 <div class="chat">
 <div id="messages"></div>
-
 <div class="inputArea">
-<input id="input">
+<input id="input" placeholder="DIGITE AQUI SUA MENSAGEM...">
 <button onclick="sendMessage()">Enviar</button>
+</div>
+</div>
+
+<!-- REGISTER -->
+<div class="overlay" id="registerBox">
+<div class="box">
+<h3>Registre-se ↓</h3>
+<input id="regUser" placeholder="Usuário">
+<input id="regPass" placeholder="Senha">
+<button onclick="register()">BAIXAR ARQUIVO</button>
+<span class="link" onclick="showLogin()">Já possui login? Clique aqui</span>
 </div>
 </div>
 
@@ -151,151 +122,73 @@ text-align:center;
 <input id="user" placeholder="Usuário">
 <input id="pass" placeholder="Senha">
 <button onclick="login()">Entrar</button>
-<p id="error"></p>
+<p id="error" style="color:red;font-size:12px"></p>
 </div>
 </div>
 
 <script>
-
 // ===== AUTH =====
 function checkAuth(){
-if(!localStorage.getItem("user")){
-loginBox.style.display="flex";
+const users = JSON.parse(localStorage.getItem("users")||"[]");
+if(users.length===0){registerBox.style.display="flex";}
+else if(!localStorage.getItem("user")){loginBox.style.display="flex";}
 }
+
+function register(){
+const u=regUser.value,p=regPass.value;if(!u||!p)return;
+let users=JSON.parse(localStorage.getItem("users")||"[]");
+users.push({user:u,pass:p});
+localStorage.setItem("users",JSON.stringify(users));
+localStorage.setItem("user",u);
+const blob=new Blob([`user:${u}\npass:${p}`]);
+const a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="login.txt";
+a.click();
+registerBox.style.display="none";
+}
+
+function showLogin(){
+registerBox.style.display="none";
+loginBox.style.display="flex";
 }
 
 function login(){
-localStorage.setItem("user",user.value);
+const u=user.value,p=pass.value;
+const users=JSON.parse(localStorage.getItem("users")||"[]");
+const ok=users.find(x=>x.user===u&&x.pass===p);
+if(!ok){error.innerText="🚨 Login ou senha incorretos";return;}
+localStorage.setItem("user",u);
 loginBox.style.display="none";
 }
 
 // ===== CHAT =====
-let chats = JSON.parse(localStorage.getItem("chats")||"[]");
+let chats=JSON.parse(localStorage.getItem("chats")||"[]");
 let currentChat=null;
 
-function saveChats(){
-localStorage.setItem("chats",JSON.stringify(chats));
-renderChats();
-}
-
-function renderChats(){
-chatList.innerHTML="";
-chats.forEach((c,i)=>{
-const div=document.createElement("div");
-div.className="chatItem";
-div.innerText=c.title;
-div.onclick=()=>loadChat(i);
-chatList.appendChild(div);
-});
-}
-
-function newChat(){
-currentChat={title:"Novo Chat",messages:[]};
-chats.unshift(currentChat);
-saveChats();
-loadChat(0);
-}
-
-function clearChats(){
-const opt = prompt("Digite:\n1 - apagar todos\n2 - apagar por índice");
-
-if(opt==="1"){
-chats=[];
-}
-else if(opt==="2"){
-const i = prompt("Digite o índice:");
-chats.splice(i,1);
-}
-
-saveChats();
-messages.innerHTML="";
-}
-
-function loadChat(i){
-currentChat=chats[i];
-messages.innerHTML="";
-currentChat.messages.forEach(m=>addMessage(m.text,m.type));
-}
-
+function saveChats(){localStorage.setItem("chats",JSON.stringify(chats));renderChats();}
+function renderChats(){chatList.innerHTML="";chats.forEach((c,i)=>{const d=document.createElement("div");d.className="chatItem";d.innerText=c.title;d.onclick=()=>loadChat(i);chatList.appendChild(d);});}
+function newChat(){currentChat={title:"Novo Chat",messages:[]};chats.unshift(currentChat);saveChats();loadChat(0);}
+function clearChats(){if(confirm("Deseja apagar todos os chats?")){chats=[];saveChats();messages.innerHTML="";}}
+function loadChat(i){currentChat=chats[i];messages.innerHTML="";currentChat.messages.forEach(m=>addMessage(m.text,m.type));}
 function sendMessage(){
-if(!localStorage.getItem("user")){
-loginBox.style.display="flex";
-return;
-}
-
-const text=input.value;
-if(!text)return;
-
-addMessage(text,"user");
-saveMsg(text,"user");
-input.value="";
-
+if(!localStorage.getItem("user")){loginBox.style.display="flex";return;}
+const t=input.value;if(!t)return;addMessage(t,"user");saveMsg(t,"user");input.value="";
 const el=addMessage("","bot");
-
-fetch("/api/chat",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({message:text})
-})
-.then(r=>r.json())
-.then(d=>{
-el.innerText=d.reply;
-saveMsg(d.reply,"bot");
-});
+fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:t})}).then(r=>r.json()).then(d=>{el.innerText=d.reply;saveMsg(d.reply,"bot");});
 }
-
-function saveMsg(text,type){
-if(!currentChat)newChat();
-currentChat.messages.push({text,type});
-if(currentChat.messages.length===1)currentChat.title=text.slice(0,20);
-saveChats();
-}
-
-function addMessage(text,type){
-const d=document.createElement("div");
-d.className="msg "+type;
-d.innerText=text;
-messages.appendChild(d);
-return d;
-}
+function saveMsg(t,type){if(!currentChat)newChat();currentChat.messages.push({text:t,type});if(currentChat.messages.length===1)currentChat.title=t.slice(0,20);saveChats();}
+function addMessage(t,type){const d=document.createElement("div");d.className="msg "+type;d.innerText=t;messages.appendChild(d);return d;}
 
 // ===== SHARE =====
-function generateId(){
-return Math.random().toString(36).substring(2,10);
-}
-
-function shareCurrent(){
-if(!currentChat) return;
-
-const id = generateId();
-localStorage.setItem("share_"+id, JSON.stringify(currentChat));
-
-const link = location.origin + location.pathname + "?chat=" + id;
-
-navigator.clipboard.writeText(link);
-alert("Link copiado!");
-}
-
-// carregar link
-function loadShared(){
-const params = new URLSearchParams(location.search);
-const id = params.get("chat");
-
-if(id){
-const data = localStorage.getItem("share_"+id);
-if(data){
-const chat = JSON.parse(data);
-messages.innerHTML="";
-chat.messages.forEach(m=>addMessage(m.text,m.type));
-}
-}
-}
+function generateId(){return Math.random().toString(36).substring(2,10);}
+function shareCurrent(){if(!currentChat)return;const id=generateId();localStorage.setItem("share_"+id,JSON.stringify(currentChat));const link=location.origin+location.pathname+"?chat="+id;navigator.clipboard.writeText(link);alert("Link copiado!");}
+function loadShared(){const params=new URLSearchParams(location.search);const id=params.get("chat");if(id){const data=localStorage.getItem("share_"+id);if(data){const chat=JSON.parse(data);messages.innerHTML="";chat.messages.forEach(m=>addMessage(m.text,m.type));}}}
 
 // INIT
 checkAuth();
 renderChats();
 loadShared();
-
 </script>
 
 </body>
