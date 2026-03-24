@@ -7,47 +7,44 @@
 
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial;background:radial-gradient(circle at top,#0a0000,#000000 80%);color:#fff;display:flex;height:100vh;overflow:hidden}
+body{margin:0;font-family:Arial;background:#000;color:#fff;display:flex;height:100vh;overflow:hidden}
 
-.sidebar{width:280px;background:rgba(15,0,0,0.95);padding:15px;border-right:1px solid rgba(255,0,0,0.15);display:flex;flex-direction:column}
-.logo{font-size:22px;font-weight:bold;color:#ff0033;margin-bottom:15px}
+.sidebar{width:280px;background:#0a0000;padding:15px;display:flex;flex-direction:column}
+.logo{font-size:22px;color:#ff0033;margin-bottom:15px}
 
-.menu{display:flex;flex-direction:column;gap:5px;margin-bottom:15px}
-.menu button{background:transparent;border:1px solid rgba(255,0,0,0.1);color:#fff;padding:10px;border-radius:8px;text-align:left;cursor:pointer}
-.menu button:hover{background:rgba(255,0,0,0.2)}
-
-.search{margin-bottom:10px}
-.search input{width:100%;padding:8px;border-radius:6px;border:none;background:#0a0000;color:#fff}
-
-.chatList{flex:1;overflow:auto}
-.chatItem{padding:10px;border-radius:8px;margin-bottom:5px;background:rgba(255,0,0,0.05);display:flex;justify-content:space-between;align-items:center}
-.chatItem:hover{background:rgba(255,0,0,0.2)}
-
-.chatTitle{flex:1;cursor:pointer}
-.menuDots{cursor:pointer;padding:5px}
-
-.dropdown{position:absolute;background:#0a0000;border:1px solid rgba(255,0,0,0.2);border-radius:6px;padding:5px;display:none;flex-direction:column}
-.dropdown button{background:none;border:none;color:#fff;padding:5px;text-align:left;cursor:pointer}
-.dropdown button:hover{background:rgba(255,0,0,0.2)}
-
-.userBox{margin-top:10px;padding:10px;background:rgba(255,0,0,0.1);border-radius:8px;font-size:12px}
-
-.chat{flex:1;display:flex;flex-direction:column;position:relative}
+.chat{flex:1;display:flex;flex-direction:column}
 #messages{flex:1;padding:20px;overflow:auto}
 
-.msg{margin-bottom:15px;padding:12px;border-radius:12px;max-width:70%;animation:fadeIn .3s ease;white-space:pre-line}
-.user{background:#ff0033;color:#fff;margin-left:auto}
-.bot{background:#1a0000;border:1px solid rgba(255,0,0,0.2)}
+.msg{margin-bottom:15px;padding:12px;border-radius:12px;max-width:70%}
+.user{background:#ff0033;margin-left:auto}
+.bot{background:#1a0000}
 
-.inputArea{display:flex;padding:10px;background:#050000;border-top:1px solid rgba(255,0,0,0.2)}
-input{flex:1;padding:12px;border:none;border-radius:8px;background:#0a0000;color:#fff}
-button{padding:12px;margin-left:5px;border:none;border-radius:8px;background:#ff0033;color:#fff;cursor:pointer;transition:.2s}
-button:hover{transform:scale(1.05)}
+.inputArea{display:flex;padding:10px;background:#050000}
+input{flex:1;padding:12px;border:none;background:#0a0000;color:#fff}
+button{padding:12px;margin-left:5px;background:#ff0033;color:#fff;border:none;cursor:pointer}
 
-@keyframes fadeIn{
-from{opacity:0;transform:translateY(10px)}
-to{opacity:1;transform:translateY(0)}
+/* OVERLAY */
+.overlay{
+position:fixed;
+top:0;left:0;
+width:100%;height:100%;
+background:#000;
+z-index:999;
+display:none;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+text-align:center;
+padding:20px;
 }
+
+.overlay input{
+margin:5px;
+padding:10px;
+width:250px;
+}
+
+.link{color:#ff0033;cursor:pointer}
 </style>
 </head>
 
@@ -55,198 +52,103 @@ to{opacity:1;transform:translateY(0)}
 
 <div class="sidebar">
 <div class="logo">NEXUS</div>
-
-<div class="menu">
-<button onclick="newChat()">➕ Novo Chat</button>
-<button onclick="clearChats()">🧹 Limpar Chats</button>
-</div>
-
-<div class="search">
-<input placeholder="Buscar chat..." oninput="searchChat(this.value)">
-</div>
-
-<div class="chatList" id="chatList"></div>
-
-<div class="userBox" id="userBox"></div>
 </div>
 
 <div class="chat">
 <div id="messages"></div>
-
 <div class="inputArea">
-<input id="input" placeholder="Digite sua mensagem...">
+<input id="input">
 <button onclick="sendMessage()">Enviar</button>
 </div>
 </div>
 
+<!-- REGISTER -->
+<div class="overlay" id="registerBox">
+<h2>Registre-se abaixo ↓↓↓</h2>
+
+<input id="regUser" placeholder="👤Crie aqui seu usuário:">
+<input id="regPass" placeholder="🔑 Crie aqui sua senha:">
+
+<p>👑 O login é irrecuperável pois o site ainda está em fase Beta.</p>
+
+<button onclick="saveRegister()"><<<<<<<<<<<<<<<<< BAIXAR ARQUIVO >>>>>>>>>>>>>>>></button>
+
+<p>Já possui login? <span class="link" onclick="showLogin()">Clique aqui</span></p>
+</div>
+
+<!-- LOGIN -->
+<div class="overlay" id="loginBox">
+<input id="logUser" placeholder="💻 Digite o usuário que você criou:">
+<input id="logPass" placeholder="💻 Digite a senha que você criou:">
+
+<button onclick="login()">🤸‍♂️ ENTRAR NO NEXUS 🤸‍♂️</button>
+
+<p id="error" style="color:red"></p>
+</div>
+
 <script>
 
-// ================= LOGIN (INJETADO, SEM QUEBRAR NADA) =================
-function renderUserBox(){
-const box = document.getElementById("userBox");
-const user = localStorage.getItem("user");
-
-if(user){
- box.innerHTML = `
- 👤 ${user}
- <div style="margin-top:5px;cursor:pointer;color:#ff0033" onclick="logout()">Sair</div>
- `;
-}else{
- box.innerHTML = `
- 🌉 Já tem conta? 
- <span style="color:#ff0033;cursor:pointer" onclick="login()">Faça login</span>
- <br>
- <span style="color:#ff0033;cursor:pointer" onclick="register()">Criar conta</span>
- `;
+// ===== AUTH =====
+function checkAuth(){
+if(!localStorage.getItem("user")){
+ document.getElementById("registerBox").style.display="flex";
 }
+}
+
+function saveRegister(){
+const user = document.getElementById("regUser").value;
+const pass = document.getElementById("regPass").value;
+
+if(!user || !pass) return;
+
+let users = JSON.parse(localStorage.getItem("users")||"[]");
+users.push({user,pass});
+localStorage.setItem("users",JSON.stringify(users));
+localStorage.setItem("user",user);
+
+// download arquivo
+const blob = new Blob([`usuario:${user}\nsenha:${pass}`],{type:"text/plain"});
+const a = document.createElement("a");
+a.href = URL.createObjectURL(blob);
+a.download = "login.txt";
+a.click();
+
+document.getElementById("registerBox").style.display="none";
+}
+
+function showLogin(){
+document.getElementById("registerBox").style.display="none";
+document.getElementById("loginBox").style.display="flex";
 }
 
 function login(){
-const user = prompt("Usuário:");
-const pass = prompt("Senha:");
+const user = document.getElementById("logUser").value;
+const pass = document.getElementById("logPass").value;
 
-const users = JSON.parse(localStorage.getItem("users") || "[]");
-const found = users.find(u => u.user === user && u.pass === pass);
+const users = JSON.parse(localStorage.getItem("users")||"[]");
+const ok = users.find(u=>u.user===user && u.pass===pass);
 
-if(!found){
- alert("Login inválido");
- return;
+if(!ok){
+document.getElementById("error").innerText="🚨 Login ou senha incorretos. Verifique e tente novamente.";
+return;
 }
 
-localStorage.setItem("user", user);
-renderUserBox();
+localStorage.setItem("user",user);
+document.getElementById("loginBox").style.display="none";
 }
 
-function register(){
-const user = prompt("Novo usuário:");
-const pass = prompt("Senha:");
-
-let users = JSON.parse(localStorage.getItem("users") || "[]");
-
-if(users.find(u => u.user === user)){
- alert("Usuário já existe");
- return;
-}
-
-users.push({user,pass});
-localStorage.setItem("users", JSON.stringify(users));
-
-alert("Conta criada");
-}
-
-function logout(){
-localStorage.removeItem("user");
-renderUserBox();
-}
-
-// ================= SEU CÓDIGO ORIGINAL (INALTERADO) =================
-let currentChat = null;
-let chats = JSON.parse(localStorage.getItem("chats") || "[]");
-
-function saveChats(){
-localStorage.setItem("chats", JSON.stringify(chats));
-renderChats();
-}
-
-function renderChats(filter=""){
-const list = document.getElementById("chatList");
-list.innerHTML = "";
-
-chats
-.filter(c=>c.title.toLowerCase().includes(filter.toLowerCase()))
-.forEach((c,i)=>{
-const div=document.createElement("div");
-div.className="chatItem";
-
-const title=document.createElement("div");
-title.className="chatTitle";
-title.innerText=c.title;
-title.onclick=()=>loadChat(i);
-
-const dots=document.createElement("div");
-dots.className="menuDots";
-dots.innerText="⋯";
-
-const dropdown=document.createElement("div");
-dropdown.className="dropdown";
-
-const del=document.createElement("button");
-del.innerText="Excluir chat";
-del.onclick=()=>deleteChat(i);
-
-const share=document.createElement("button");
-share.innerText="Compartilhar";
-share.onclick=()=>shareChat(c);
-
-dropdown.appendChild(share);
-dropdown.appendChild(del);
-
-dots.onclick=(e)=>{
-e.stopPropagation();
-closeAllDropdowns();
-dropdown.style.display="flex";
-dropdown.style.position="absolute";
-dropdown.style.right="10px";
-dropdown.style.top=(dots.offsetTop+20)+"px";
-};
-
-window.addEventListener("click",()=>dropdown.style.display="none");
-
-div.appendChild(title);
-div.appendChild(dots);
-div.appendChild(dropdown);
-list.appendChild(div);
-});
-}
-
-function closeAllDropdowns(){
-document.querySelectorAll(".dropdown").forEach(d=>d.style.display="none");
-}
-
-function deleteChat(index){
-chats.splice(index,1);
-saveChats();
-document.getElementById("messages").innerHTML="";
-}
-
-function shareChat(chat){
-const text = chat.messages.map(m=>m.type+": "+m.text).join("\n");
-navigator.clipboard.writeText(text);
-alert("Chat copiado!");
-}
-
-function searchChat(val){
-renderChats(val);
-}
-
-function newChat(){
-currentChat = {
- title:"Novo Chat",
- messages:[{type:"bot",text:"⛏️⛏️ Criado e atualizado por Yudi. Sempre mande sugestões. Vamos lá! 🌀"}]
-};
-chats.unshift(currentChat);
-saveChats();
-loadChat(0);
-}
-
-function clearChats(){
-chats=[];
-saveChats();
-}
-
-function loadChat(index){
-currentChat = chats[index];
-document.getElementById("messages").innerHTML="";
-currentChat.messages.forEach(m=>addMessage(m.text,m.type));
-}
-
+// ===== CHAT =====
 function sendMessage(){
+if(!localStorage.getItem("user")){
+ document.getElementById("registerBox").style.display="flex";
+ return;
+}
+
 const input=document.getElementById("input");
 const text=input.value;
 if(!text)return;
 
 addMessage(text,"user");
-saveMsg(text,"user");
 input.value="";
 
 const el=addMessage("","bot");
@@ -258,16 +160,17 @@ body:JSON.stringify({message:text})
 })
 .then(r=>r.json())
 .then(d=>{
-stream(el,d.reply);
-saveMsg(d.reply,"bot");
+ typeWriter(el,d.reply);
 });
 }
 
-function stream(el,text){
+function typeWriter(el,text){
+el.innerText="";
 let i=0;
+
 function type(){
  if(i<text.length){
-  el.innerText += text.charAt(i);
+  el.innerText += text[i];
   i++;
   setTimeout(type,15);
  }
@@ -275,28 +178,16 @@ function type(){
 type();
 }
 
-function saveMsg(text,type){
-if(!currentChat)newChat();
-currentChat.messages.push({text,type});
-if(currentChat.messages.length===2)currentChat.title=text.slice(0,25);
-saveChats();
-}
-
 function addMessage(text,type){
 const d=document.createElement("div");
 d.className="msg "+type;
-if(type==="user"){
- d.innerText = "♨️ Você: " + text;
-}else{
- d.innerText = text;
-}
+d.innerText=text;
 document.getElementById("messages").appendChild(d);
 return d;
 }
 
 // INIT
-renderChats();
-renderUserBox();
+checkAuth();
 
 </script>
 
