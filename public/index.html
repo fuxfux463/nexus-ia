@@ -9,66 +9,49 @@
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial;background:#000;color:#fff;display:flex;height:100vh;overflow:hidden}
 
-/* CHAT */
-.sidebar{width:260px;background:#0a0000;padding:15px}
-.logo{font-size:20px;color:#ff0033}
+/* SIDEBAR */
+.sidebar{width:260px;background:#0a0000;padding:15px;display:flex;flex-direction:column}
+.logo{font-size:20px;color:#ff0033;margin-bottom:10px}
 
+.menu button{
+margin-bottom:5px;
+padding:8px;
+background:#111;
+border:none;
+color:#fff;
+cursor:pointer;
+}
+
+.chatList{flex:1;overflow:auto}
+.chatItem{padding:8px;background:#111;margin-bottom:5px;display:flex;justify-content:space-between;cursor:pointer}
+
+.menuDots{cursor:pointer}
+
+/* CHAT */
 .chat{flex:1;display:flex;flex-direction:column}
 #messages{flex:1;padding:15px;overflow:auto}
 
-.msg{margin-bottom:10px;padding:10px;border-radius:10px;max-width:70%;font-size:14px}
+.msg{margin-bottom:10px;padding:10px;border-radius:10px;max-width:70%}
 .user{background:#ff0033;margin-left:auto}
 .bot{background:#1a0000}
 
 .inputArea{display:flex;padding:8px;background:#050000}
-input{flex:1;padding:10px;border:none;background:#0a0000;color:#fff;font-size:14px}
-button{padding:10px 12px;margin-left:5px;background:#ff0033;color:#fff;border:none;cursor:pointer;font-size:13px}
+input{flex:1;padding:10px;border:none;background:#0a0000;color:#fff}
+button{padding:10px;margin-left:5px;background:#ff0033;color:#fff;border:none;cursor:pointer}
 
-/* OVERLAY COMPACTO */
+/* OVERLAY */
 .overlay{
-position:fixed;
-top:0;left:0;
-width:100%;height:100%;
-background:rgba(0,0,0,0.95);
-z-index:999;
-display:none;
-justify-content:center;
-align-items:center;
+position:fixed;top:0;left:0;width:100%;height:100%;
+background:#000;display:none;justify-content:center;align-items:center;z-index:999;
 }
 
 .box{
-background:#0a0000;
-padding:18px;
-border-radius:8px;
-width:260px;
-display:flex;
-flex-direction:column;
-gap:8px;
-text-align:center;
-border:1px solid rgba(255,0,0,0.2);
+background:#0a0000;padding:15px;border-radius:8px;width:260px;
+display:flex;flex-direction:column;gap:8px;text-align:center;
 }
 
-.box h2{font-size:15px;margin:0}
-.box p{font-size:11px;color:#aaa;margin:0}
-
-.box input{
-padding:8px;
-font-size:13px;
-background:#000;
-border:1px solid #222;
-color:#fff;
-border-radius:6px;
-}
-
-.box button{
-padding:9px;
-font-size:12px;
-background:#ff0033;
-border:none;
-border-radius:6px;
-cursor:pointer;
-}
-
+.box input{padding:8px;background:#000;color:#fff;border:1px solid #222}
+.box button{padding:8px;background:#ff0033;border:none;color:#fff}
 .link{color:#ff0033;cursor:pointer;font-size:12px}
 </style>
 </head>
@@ -77,28 +60,31 @@ cursor:pointer;
 
 <div class="sidebar">
 <div class="logo">NEXUS</div>
+
+<div class="menu">
+<button onclick="newChat()">➕ Novo Chat</button>
+<button onclick="clearChats()">🧹 Limpar Chats</button>
+</div>
+
+<div class="chatList" id="chatList"></div>
 </div>
 
 <div class="chat">
 <div id="messages"></div>
+
 <div class="inputArea">
 <input id="input">
 <button onclick="sendMessage()">Enviar</button>
 </div>
 </div>
 
-<!-- REGISTRO -->
+<!-- REGISTER -->
 <div class="overlay" id="registerBox">
 <div class="box">
-<h2>Registre-se ↓</h2>
-
-<input id="regUser" placeholder="👤 Usuário">
-<input id="regPass" placeholder="🔑 Senha">
-
-<p>👑 Login irrecuperável (Beta)</p>
-
+<h3>Registre-se ↓</h3>
+<input id="regUser" placeholder="Usuário">
+<input id="regPass" placeholder="Senha">
 <button onclick="saveRegister()">BAIXAR ARQUIVO</button>
-
 <span class="link" onclick="showLogin()">Já possui login? Clique aqui</span>
 </div>
 </div>
@@ -106,82 +92,49 @@ cursor:pointer;
 <!-- LOGIN -->
 <div class="overlay" id="loginBox">
 <div class="box">
-<input id="logUser" placeholder="💻 Usuário">
-<input id="logPass" placeholder="💻 Senha">
-
-<button onclick="login()">ENTRAR NO NEXUS</button>
-
+<input id="logUser" placeholder="Usuário">
+<input id="logPass" placeholder="Senha">
+<button onclick="login()">ENTRAR</button>
 <p id="error" style="color:red"></p>
 </div>
 </div>
 
 <script>
 
-// ===== SISTEMA DE SESSÃO =====
+// ===== AUTH =====
 function checkAuth(){
-
 const user = localStorage.getItem("user");
-const lastLogin = localStorage.getItem("lastLogin");
-
-// se nunca logou → registro
-if(!user){
- showRegister();
- return;
+if(!user) showRegister();
 }
 
-// força logout aleatório (chance 20%)
-if(Math.random() < 0.2){
- logout();
- showLogin();
- return;
-}
-
-// expira após 24h
-if(lastLogin){
- const diff = Date.now() - parseInt(lastLogin);
- if(diff > 86400000){
-  logout();
-  showLogin();
-  return;
- }
-}
-
-}
-
-// ===== UI =====
 function showRegister(){
-document.getElementById("registerBox").style.display="flex";
+registerBox.style.display="flex";
 }
 
 function showLogin(){
-document.getElementById("registerBox").style.display="none";
-document.getElementById("loginBox").style.display="flex";
+registerBox.style.display="none";
+loginBox.style.display="flex";
 }
 
-// ===== REGISTRO =====
 function saveRegister(){
 const user = regUser.value;
 const pass = regPass.value;
-if(!user || !pass) return;
 
 let users = JSON.parse(localStorage.getItem("users")||"[]");
 users.push({user,pass});
 localStorage.setItem("users",JSON.stringify(users));
 
 localStorage.setItem("user",user);
-localStorage.setItem("lastLogin",Date.now());
 
-// download
-const blob = new Blob([`usuario:${user}\nsenha:${pass}`]);
+const blob = new Blob([`user:${user}\npass:${pass}`]);
 const a = document.createElement("a");
 a.href = URL.createObjectURL(blob);
-a.download = "login.txt";
+a.download="login.txt";
 a.click();
 
-document.getElementById("registerBox").style.display="none";
+registerBox.style.display="none";
 }
 
-// ===== LOGIN =====
 function login(){
 const user = logUser.value;
 const pass = logPass.value;
@@ -190,35 +143,81 @@ const users = JSON.parse(localStorage.getItem("users")||"[]");
 const ok = users.find(u=>u.user===user && u.pass===pass);
 
 if(!ok){
- error.innerText="🚨 Login ou senha incorretos. Verifique e tente novamente.";
- return;
+error.innerText="🚨 Login ou senha incorretos. Verifique e tente novamente.";
+return;
 }
 
 localStorage.setItem("user",user);
-localStorage.setItem("lastLogin",Date.now());
-
-document.getElementById("loginBox").style.display="none";
-}
-
-// ===== LOGOUT =====
-function logout(){
-localStorage.removeItem("user");
-localStorage.removeItem("lastLogin");
+loginBox.style.display="none";
 }
 
 // ===== CHAT =====
+let chats = JSON.parse(localStorage.getItem("chats")||"[]");
+let currentChat=null;
+
+function saveChats(){
+localStorage.setItem("chats",JSON.stringify(chats));
+renderChats();
+}
+
+function renderChats(){
+chatList.innerHTML="";
+chats.forEach((c,i)=>{
+const div=document.createElement("div");
+div.className="chatItem";
+
+const title=document.createElement("span");
+title.innerText=c.title;
+title.onclick=()=>loadChat(i);
+
+const dots=document.createElement("span");
+dots.className="menuDots";
+dots.innerText="⋯";
+dots.onclick=()=>deleteChat(i);
+
+div.appendChild(title);
+div.appendChild(dots);
+chatList.appendChild(div);
+});
+}
+
+function newChat(){
+currentChat={title:"Novo Chat",messages:[]};
+chats.unshift(currentChat);
+saveChats();
+loadChat(0);
+}
+
+function clearChats(){
+chats=[];
+saveChats();
+messages.innerHTML="";
+}
+
+function deleteChat(i){
+chats.splice(i,1);
+saveChats();
+messages.innerHTML="";
+}
+
+function loadChat(i){
+currentChat=chats[i];
+messages.innerHTML="";
+currentChat.messages.forEach(m=>addMessage(m.text,m.type));
+}
+
 function sendMessage(){
 
 if(!localStorage.getItem("user")){
- showLogin();
- return;
+showLogin();
+return;
 }
 
-const input=document.getElementById("input");
 const text=input.value;
 if(!text)return;
 
 addMessage(text,"user");
+saveMsg(text,"user");
 input.value="";
 
 const el=addMessage("","bot");
@@ -229,20 +228,17 @@ headers:{"Content-Type":"application/json"},
 body:JSON.stringify({message:text})
 })
 .then(r=>r.json())
-.then(d=> typeWriter(el,d.reply));
+.then(d=>{
+el.innerText = d.reply; // SEM ANIMAÇÃO
+saveMsg(d.reply,"bot");
+});
 }
 
-function typeWriter(el,text){
-el.innerText="";
-let i=0;
-
-function t(){
- if(i<text.length){
-  el.innerText+=text[i++];
-  setTimeout(t,12);
- }
-}
-t();
+function saveMsg(text,type){
+if(!currentChat)newChat();
+currentChat.messages.push({text,type});
+if(currentChat.messages.length===1)currentChat.title=text.slice(0,25);
+saveChats();
 }
 
 function addMessage(text,type){
@@ -255,6 +251,7 @@ return d;
 
 // INIT
 checkAuth();
+renderChats();
 
 </script>
 
