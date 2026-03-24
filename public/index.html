@@ -38,6 +38,7 @@ body {
 @keyframes planetOrbit { 0%{transform:translate(-50%,-50%) rotate(0deg) translateX(200px) rotate(0deg);} 100%{transform:translate(-50%,-50%) rotate(360deg) translateX(200px) rotate(-360deg);} }
 @keyframes planetRotate {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
 
+/* SCROLLBAR */
 ::-webkit-scrollbar { width:8px; }
 ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
 ::-webkit-scrollbar-thumb { background: linear-gradient(145deg, #007bff, #00d4ff); border-radius:4px; }
@@ -51,7 +52,7 @@ body {
 .sidebar::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background: linear-gradient(90deg, transparent, #007bff, transparent); animation: shimmer 3s infinite; }
 .logo { font-size:32px; font-weight:900; background: linear-gradient(45deg,#007bff,#00d4ff,#007bff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; display:flex; align-items:center; gap:10px; margin-bottom:20px; text-shadow:0 0 20px rgba(0,123,255,0.5);}
 .bulb { animation: pulseGlow 2s infinite; filter: drop-shadow(0 0 10px #00ff88); }
-@keyframes pulseGlow {0%,100%{transform:scale(1);filter:drop-shadow(0 0 10px #00ff88);}50%{transform:scale(1.1);filter:drop-shadow(0 0 20px #00ff88);}}
+@keyframes pulseGlow {0%,100%{transform:scale(1);filter:drop-shadow(0 0 10px #00ff88);}50%{transform:scale(1.1);filter:drop-shadow(0 0 20px #00ff88);} }
 @keyframes shimmer {0%{transform:translateX(-100%);}100%{transform:translateX(100%);}}
 
 /* MENU */
@@ -190,6 +191,7 @@ function checkAuth(){
     if(users.length===0){ registerBox.style.display="flex"; } 
     else if(!localStorage.getItem("user")){ loginBox.style.display="flex"; }
 }
+
 function register(){
     const u = regUser.value, p = regPass.value;
     if(!u || !p) return alert("Preencha todos os campos!");
@@ -201,7 +203,7 @@ function register(){
     localStorage.setItem("users", JSON.stringify(users));
     localStorage.setItem("user", u);
 
-    // Cria arquivo de backup com credenciais
+    // Cria arquivo de backup
     const blob = new Blob([`user: ${u}\npass: ${p}\n\n✅ Credenciais salvas com sucesso!`], {type: 'text/plain'});
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -212,19 +214,9 @@ function register(){
     alert("✅ Registrado! Use o arquivo para backup.");
 }
 
-// Mostra a tela de login
-function showLogin(){
-    registerBox.style.display = "none";
-    loginBox.style.display = "flex";
-}
+function showLogin(){ registerBox.style.display = "none"; loginBox.style.display = "flex"; }
+function showRegister(){ loginBox.style.display = "none"; registerBox.style.display = "flex"; }
 
-// Mostra a tela de registro
-function showRegister(){
-    loginBox.style.display = "none";
-    registerBox.style.display = "flex";
-}
-
-// Função de login
 function login(){
     const u = user.value, p = pass.value;
     const users = JSON.parse(localStorage.getItem("users") || "[]");
@@ -245,11 +237,7 @@ function login(){
 let chats = JSON.parse(localStorage.getItem("chats") || "[]");
 let currentChat = null;
 
-function saveChats(){
-    localStorage.setItem("chats", JSON.stringify(chats));
-    renderChats();
-}
-
+function saveChats(){ localStorage.setItem("chats", JSON.stringify(chats)); renderChats(); }
 function renderChats(){
     chatList.innerHTML = "";
     chats.forEach((c, i) => {
@@ -261,13 +249,7 @@ function renderChats(){
     });
 }
 
-function newChat(){
-    currentChat = {title: "Novo Chat", messages: []};
-    chats.unshift(currentChat);
-    saveChats();
-    loadChat(0);
-}
-
+function newChat(){ currentChat = {title: "Novo Chat", messages: []}; chats.unshift(currentChat); saveChats(); loadChat(0); }
 function clearChats(){
     if(confirm("🗑️ Deseja apagar TODOS os chats?")){
         chats = [];
@@ -276,7 +258,6 @@ function clearChats(){
         currentChat = null;
     }
 }
-
 function loadChat(i){
     currentChat = chats[i];
     messages.innerHTML = "";
@@ -284,7 +265,8 @@ function loadChat(i){
     messages.scrollTop = messages.scrollHeight;
 }
 
-function sendMessage(){
+// ===== SEND MESSAGE =====
+async function sendMessage(){
     if(!localStorage.getItem("user")){
         loginBox.style.display = "flex";
         return;
@@ -297,20 +279,21 @@ function sendMessage(){
     saveMsg(t, "user");
     input.value = "";
 
-    // Simula resposta da IA
     const el = addMessage("🤖 Nexus IA está processando...", "bot");
-    setTimeout(() => {
-        const responses = [
-            "🚀 Resposta processada com sucesso!",
-            "🌌 Análise completa realizada.",
-            "💫 Dados processados no espaço-tempo.",
-            "⭐ Operação executada perfeitamente.",
-            "⚡ Resposta otimizada entregue."
-        ];
-        const reply = responses[Math.floor(Math.random() * responses.length)];
-        el.innerText = reply;
-        saveMsg(reply, "bot");
-    }, 1500 + Math.random() * 2000);
+
+    try {
+        const res = await fetch("/api/chat.js", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt: t })
+        });
+        const data = await res.json();
+        el.innerText = data.reply; 
+        saveMsg(data.reply, "bot");
+    } catch(err) {
+        el.innerText = "❌ Erro ao processar a resposta.";
+        console.error(err);
+    }
 }
 
 function saveMsg(t, type){
@@ -331,17 +314,13 @@ function addMessage(t, type){
 
 // ===== SHARE =====
 function generateId(){ return Math.random().toString(36).substring(2,10); }
-
 function shareCurrent(){
     if(!currentChat) return alert("Nenhum chat ativo!");
     const id = generateId();
     localStorage.setItem("share_" + id, JSON.stringify(currentChat));
     const link = location.origin + location.pathname + "?chat=" + id;
-    navigator.clipboard.writeText(link).then(() => {
-        alert("🔗 Link copiado!\n\n" + link);
-    });
+    navigator.clipboard.writeText(link).then(() => { alert("🔗 Link copiado!\n\n" + link); });
 }
-
 function loadShared(){
     const params = new URLSearchParams(location.search);
     const id = params.get("chat");
@@ -357,18 +336,10 @@ function loadShared(){
 }
 
 // ===== INPUT ENTER =====
-input.addEventListener("keypress", function(e){
-    if(e.key === "Enter") sendMessage();
-});
+input.addEventListener("keypress", function(e){ if(e.key === "Enter") sendMessage(); });
 
 // ===== INIT =====
-window.addEventListener("load", function(){
-    createStars();
-    checkAuth();
-    renderChats();
-    loadShared();
-    if(chats.length === 0) newChat();
-});
+window.addEventListener("load", function(){ createStars(); checkAuth(); renderChats(); loadShared(); if(chats.length === 0) newChat(); });
 
 // ===== EFEITOS MOUSE =====
 document.addEventListener("mousemove", function(e){
@@ -383,3 +354,6 @@ document.addEventListener("mousemove", function(e){
         star.style.transform = `scale(${1 + intensity * 0.5})`;
     });
 });
+</script>
+</body>
+</html>
