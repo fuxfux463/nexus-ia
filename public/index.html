@@ -5,94 +5,67 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NEXUS IA</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-    font-family: 'Orbitron', monospace;
-    height: 100vh;
-    overflow: hidden;
-    position: relative;
-    background: #0a0a0a;
-    color: #fff;
-    display: flex;
-}
+* { box-sizing: border-box; margin:0; padding:0; }
+body{font-family:'Orbitron', monospace; height:100vh; overflow:hidden; position:relative; background:#0a0a0a; color:#fff; display:flex;}
 
-/* ===== FUNDO ESPACIAL 4K ===== */
-.space-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%); overflow: hidden; }
-.stars { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-.star { position: absolute; background: #fff; border-radius: 50%; animation: twinkle 3s infinite ease-in-out; }
-.star:nth-child(odd) { animation-delay: 0s; }
-.star:nth-child(even) { animation-delay: 1.5s; }
-@keyframes twinkle { 0%,100%{opacity:0.3;transform:scale(1);}50%{opacity:1;transform:scale(1.2);} }
+/* FUNDO ESPACIAL */
+.space-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-2;background:radial-gradient(ellipse at bottom,#1b2735 0%,#090a0f 100%);overflow:hidden;}
+.stars{position:absolute;top:0;left:0;width:100%;height:100%;}
+.star{position:absolute;background:#fff;border-radius:50%;animation:twinkle 3s infinite ease-in-out;}
+.star:nth-child(odd){animation-delay:0s;}
+.star:nth-child(even){animation-delay:1.5s;}
+@keyframes twinkle{0%,100%{opacity:0.3;transform:scale(1);}50%{opacity:1;transform:scale(1.2);}}
 
-.nebula { position: absolute; border-radius: 50%; filter: blur(1px); opacity: 0.1; }
-.nebula1 { top:20%; left:10%; width:300px; height:300px; background: radial-gradient(circle, rgba(120,119,198,0.8) 0%, transparent 70%); animation: nebulaFloat 20s infinite linear; }
-.nebula2 { top:60%; right:20%; width:400px; height:400px; background: radial-gradient(circle, rgba(255,0,150,0.6) 0%, transparent 70%); animation: nebulaFloat 25s infinite linear reverse; }
-.nebula3 { bottom:10%; left:30%; width:250px; height:250px; background: radial-gradient(circle, rgba(0,255,255,0.5) 0%, transparent 70%); animation: nebulaFloat 30s infinite linear; }
-@keyframes nebulaFloat { 0%{transform:translate(0,0) rotate(0deg);}25%{transform:translate(30px,-20px) rotate(90deg);}50%{transform:translate(60px,0) rotate(180deg);}75%{transform:translate(30px,20px) rotate(270deg);}100%{transform:translate(0,0) rotate(360deg);} }
+.nebula{position:absolute;border-radius:50%;filter:blur(1px);opacity:0.1;}
+.nebula1{top:20%; left:10%; width:300px; height:300px; background:radial-gradient(circle, rgba(120,119,198,0.8) 0%, transparent 70%); animation:nebulaFloat 20s infinite linear;}
+.nebula2{top:60%; right:20%; width:400px; height:400px; background:radial-gradient(circle, rgba(255,0,150,0.6) 0%, transparent 70%); animation:nebulaFloat 25s infinite linear reverse;}
+.nebula3{bottom:10%; left:30%; width:250px; height:250px; background:radial-gradient(circle, rgba(0,255,255,0.5) 0%, transparent 70%); animation:nebulaFloat 30s infinite linear;}
+@keyframes nebulaFloat{0%{transform:translate(0,0) rotate(0deg);}25%{transform:translate(30px,-20px) rotate(90deg);}50%{transform:translate(60px,0) rotate(180deg);}75%{transform:translate(30px,20px) rotate(270deg);}100%{transform:translate(0,0) rotate(360deg);}}
 
-.planets { position: absolute; top:50%; left:50%; transform: translate(-50%,-50%); animation: planetOrbit 40s infinite linear; }
-.planet { position: absolute; border-radius: 50%; }
-.planet1 { width:120px; height:120px; background: radial-gradient(circle at 30% 30%, #ff6b6b, #ee5a52, #c44569); box-shadow:0 0 50px rgba(255,107,107,0.5); animation: planetRotate 15s infinite linear; }
-.planet2 { top:20px; right:-40px; width:60px; height:60px; background: radial-gradient(circle at 40% 40%, #4ecdc4, #44a08d); box-shadow:0 0 30px rgba(78,205,196,0.6); animation: planetRotate 20s infinite linear reverse; }
-@keyframes planetOrbit { 0%{transform:translate(-50%,-50%) rotate(0deg) translateX(200px) rotate(0deg);} 100%{transform:translate(-50%,-50%) rotate(360deg) translateX(200px) rotate(-360deg);} }
-@keyframes planetRotate {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+.planets{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); animation:planetOrbit 40s infinite linear;}
+.planet{position:absolute;border-radius:50%;}
+.planet1{width:120px;height:120px; background:radial-gradient(circle at 30% 30%,#ff6b6b,#ee5a52,#c44569); box-shadow:0 0 50px rgba(255,107,107,0.5); animation:planetRotate 15s infinite linear;}
+.planet2{top:20px; right:-40px; width:60px;height:60px; background:radial-gradient(circle at 40% 40%,#4ecdc4,#44a08d); box-shadow:0 0 30px rgba(78,205,196,0.6); animation:planetRotate 20s infinite linear reverse;}
+@keyframes planetOrbit{0%{transform:translate(-50%,-50%) rotate(0deg) translateX(200px) rotate(0deg);}100%{transform:translate(-50%,-50%) rotate(360deg) translateX(200px) rotate(-360deg);}}
+@keyframes planetRotate{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
 
-/* SCROLLBAR */
-::-webkit-scrollbar { width:8px; }
-::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
-::-webkit-scrollbar-thumb { background: linear-gradient(145deg, #007bff, #00d4ff); border-radius:4px; }
-::-webkit-scrollbar-thumb:hover { background: linear-gradient(145deg, #00d4ff, #007bff); }
+::-webkit-scrollbar{width:8px;}
+::-webkit-scrollbar-track{background: rgba(255,255,255,0.05);}
+::-webkit-scrollbar-thumb{background: linear-gradient(145deg, #007bff, #00d4ff); border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background: linear-gradient(145deg, #00d4ff, #007bff);}
 
-/* ===== GLASSMORPHISM ===== */
-.glass { background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); border:1px solid rgba(255,255,255,0.2); box-shadow:0 8px 32px rgba(0,0,0,0.5); }
+/* GLASSMORPHISM */
+.glass{background: rgba(255,255,255,0.1); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.2); box-shadow:0 8px 32px rgba(0,0,0,0.5);}
 
 /* SIDEBAR */
-.sidebar { background: linear-gradient(145deg, rgba(0,123,255,0.15), rgba(0,123,255,0.05)); border-right:1px solid rgba(0,123,255,0.3); display:flex; flex-direction:column; padding:20px; flex-shrink:0; width:280px; transition: all 0.4s cubic-bezier(0.4,0,0.2,1); position:relative; overflow:hidden; }
-.sidebar::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background: linear-gradient(90deg, transparent, #007bff, transparent); animation: shimmer 3s infinite; }
-.logo { font-size:32px; font-weight:900; background: linear-gradient(45deg,#007bff,#00d4ff,#007bff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; display:flex; align-items:center; gap:10px; margin-bottom:20px; text-shadow:0 0 20px rgba(0,123,255,0.5);}
-.bulb { animation: pulseGlow 2s infinite; filter: drop-shadow(0 0 10px #00ff88); }
-@keyframes pulseGlow {0%,100%{transform:scale(1);filter:drop-shadow(0 0 10px #00ff88);}50%{transform:scale(1.1);filter:drop-shadow(0 0 20px #00ff88);} }
-@keyframes shimmer {0%{transform:translateX(-100%);}100%{transform:translateX(100%);}}
+.sidebar{background:linear-gradient(145deg, rgba(0,123,255,0.15), rgba(0,123,255,0.05)); border-right:1px solid rgba(0,123,255,0.3); display:flex; flex-direction:column; padding:20px; flex-shrink:0; width:280px; transition:all 0.4s; overflow:hidden; position:relative;}
+.logo{font-size:32px; font-weight:900; background: linear-gradient(45deg,#007bff,#00d4ff,#007bff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; display:flex; align-items:center; gap:10px; margin-bottom:20px;}
+.bulb{animation:pulseGlow 2s infinite; filter:drop-shadow(0 0 10px #00ff88);}
+@keyframes pulseGlow{0%,100%{transform:scale(1);filter:drop-shadow(0 0 10px #00ff88);}50%{transform:scale(1.1);filter:drop-shadow(0 0 20px #00ff88);}}
 
-/* MENU */
-.menu button { margin-top:8px;padding:12px 16px;background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)); color:#fff; border:1px solid rgba(255,255,255,0.2); cursor:pointer; font-size:14px; width:100%; border-radius:12px; transition:all 0.3s ease; position:relative; overflow:hidden; }
-.menu button::before { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition:left 0.5s; }
-.menu button:hover::before { left:100%; }
-.menu button:hover { background: linear-gradient(145deg, rgba(0,123,255,0.3), rgba(0,123,255,0.1)); transform:translateY(-2px); box-shadow:0 10px 25px rgba(0,123,255,0.3); }
+.menu button{margin-top:8px;padding:12px 16px;background:linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)); color:#fff; border:1px solid rgba(255,255,255,0.2); cursor:pointer; font-size:14px; width:100%; border-radius:12px; transition:all 0.3s;}
+.menu button:hover{background:linear-gradient(145deg, rgba(0,123,255,0.3), rgba(0,123,255,0.1)); transform:translateY(-2px); box-shadow:0 10px 25px rgba(0,123,255,0.3);}
 
 /* CHAT LIST */
-.chatList { flex:1; overflow:auto; margin-top:20px; display:flex; flex-direction:column; gap:8px; padding-right:10px; }
-.chatItem { padding:12px 16px; border:2px solid rgba(0,123,255,0.3); border-radius:12px; cursor:pointer; font-size:14px; transition:all 0.3s ease; position:relative; overflow:hidden; }
-.chatItem:hover { background: rgba(0,123,255,0.15); border-color:#00d4ff; transform:translateX(5px); box-shadow:0 8px 20px rgba(0,123,255,0.2); }
+.chatList{flex:1; overflow:auto; margin-top:20px; display:flex; flex-direction:column; gap:8px; padding-right:10px;}
+.chatItem{padding:12px 16px; border:2px solid rgba(0,123,255,0.3); border-radius:12px; cursor:pointer; font-size:14px; transition:all 0.3s;}
+.chatItem:hover{background: rgba(0,123,255,0.15); border-color:#00d4ff;}
 
 /* CHAT */
-.chat { flex:1; display:flex; flex-direction:column; position:relative; }
-#messages { flex:1; padding:20px; overflow:auto; scroll-behavior:smooth; }
-.msg { margin-bottom:12px; padding:16px 20px; border-radius:20px; max-width:70%; font-size:14px; word-wrap:break-word; position:relative; animation: msgSlide 0.4s ease-out; }
-@keyframes msgSlide { from{opacity:0;transform:translateY(20px) scale(0.9);}to{opacity:1;transform:translateY(0) scale(1);} }
-.user { background: linear-gradient(145deg,#007bff,#0056b3); margin-left:auto; border-bottom-right-radius:4px; box-shadow:0 8px 20px rgba(0,123,255,0.3); }
-.bot { background: linear-gradient(145deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); border-bottom-left-radius:4px; box-shadow:0 4px 15px rgba(0,0,0,0.3); }
+.chat{flex:1; display:flex; flex-direction:column; position:relative;}
+#messages{flex:1; padding:20px; overflow:auto; scroll-behavior:smooth;}
+.msg{margin-bottom:12px; padding:16px 20px; border-radius:20px; max-width:70%; font-size:14px; word-wrap:break-word; position:relative;}
+.user{background:linear-gradient(145deg,#007bff,#0056b3); margin-left:auto; border-bottom-right-radius:4px; box-shadow:0 8px 20px rgba(0,123,255,0.3);}
+.bot{background:linear-gradient(145deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); border-bottom-left-radius:4px; box-shadow:0 4px 15px rgba(0,0,0,0.3);}
 
 /* INPUT AREA */
-.inputArea { display:flex; padding:20px; background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)); border-top:1px solid rgba(255,255,255,0.1); position:relative; }
-.inputArea input { flex:1; padding:16px 20px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:25px; font-size:14px; transition:all 0.3s ease; }
-.inputArea input:focus { outline:none; border-color:#00d4ff; box-shadow:0 0 20px rgba(0,212,255,0.3); background: rgba(255,255,255,0.15); }
-.inputArea input::placeholder { color: rgba(255,255,255,0.6); }
-.inputArea button { padding:16px 24px; margin-left:12px; background: linear-gradient(145deg,#00ff88,#00cc6a); color:#000; border:none; cursor:pointer; font-size:14px; font-weight:700; border-radius:25px; transition:all 0.3s ease; box-shadow:0 8px 20px rgba(0,255,136,0.3); }
-.inputArea button:hover { transform:translateY(-3px) scale(1.05); box-shadow:0 15px 35px rgba(0,255,136,0.4); }
-
-/* OVERLAYS */
-.overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); display:none; justify-content:center; align-items:center; z-index:999; animation:fadeIn 0.3s ease; }
-@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
-.box { background: linear-gradient(145deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); backdrop-filter: blur(25px); padding:30px; border-radius:20px; width:90%; max-width:400px; display:flex; flex-direction:column; gap:15px; text-align:center; border:1px solid rgba(255,255,255,0.2); box-shadow:0 20px 40px rgba(0,0,0,0.5); }
-.box input { padding:15px; border:1px solid rgba(255,255,255,0.3); border-radius:12px; background:rgba(255,255,255,0.1); color:#fff; font-size:14px; transition:all 0.3s ease; }
-.box input:focus { outline:none; border-color:#007bff; box-shadow:0 0 20px rgba(0,123,255,0.3); }
-.box input::placeholder { color: rgba(255,255,255,0.6); }
-.box button { padding:15px; background: linear-gradient(145deg,#007bff,#0056b3); color:#fff; border:none; border-radius:12px; cursor:pointer; font-size:16px; font-weight:700; transition:all 0.3s ease; }
-.box button:hover { transform:translateY(-2px); box-shadow:0 10px 25px rgba(0,123,255,0.4); }
-.link { color:#00d4ff; cursor:pointer; font-size:14px; text-decoration:none; transition:all 0.3s ease; }
-.link:hover { color:#00ff88; text-shadow:0 0 10px rgba(0,255,136,0.5); }
+.inputArea{display:flex; padding:20px; background:linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)); border-top:1px solid rgba(255,255,255,0.1);}
+.inputArea input{flex:1; padding:16px 20px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:25px; font-size:14px;}
+.inputArea button{padding:16px 20px; margin-left:12px; background:linear-gradient(145deg,#00ff88,#00cc6a); color:#000; border:none; cursor:pointer; font-size:14px; font-weight:700; border-radius:25px;}
+.inputArea button:hover{transform:translateY(-3px) scale(1.05);}
+.stopBtn{background:linear-gradient(145deg,#ff5555,#cc0000); color:#fff; margin-left:8px;}
 
 /* RESPONSIVO */
 @media(max-width:768px){
@@ -104,14 +77,11 @@ body {
     .inputArea{flex-direction:column;}
     .inputArea input{margin-bottom:12px;width:100%;}
     .inputArea button{width:100%; margin-left:0;}
-    .planet1{width:80px;height:80px;}
-    .planet2{width:40px;height:40px;}
 }
 </style>
-</head>
 <body>
 
-<!-- FUNDO ESPACIAL 4K -->
+<!-- FUNDO ESPACIAL -->
 <div class="space-bg">
     <div class="stars" id="stars"></div>
     <div class="nebula nebula1"></div>
@@ -129,7 +99,6 @@ body {
     <div class="menu">
         <button onclick="newChat()">🌌 Novo Chat</button>
         <button onclick="clearChats()">🗑️ Limpar Chats</button>
-        <button onclick="shareCurrent()">📤 Compartilhar</button>
     </div>
     <div class="chatList" id="chatList"></div>
 </div>
@@ -139,23 +108,23 @@ body {
     <div id="messages"></div>
     <div class="inputArea glass">
         <input id="input" placeholder="Digite sua mensagem para a IA espacial... 🚀">
-        <button id="sendBtn" onclick="sendMessage()">Enviar 💬</button>
+        <button id="sendBtn">Enviar 💬</button>
+        <button id="stopBtn" class="stopBtn" style="display:none;">Parar ❌</button>
     </div>
 </div>
 
-<!-- REGISTER -->
-<div class="overlay" id="registerBox">
+<!-- LOGIN / REGISTER -->
+<div class="overlay" id="registerBox" style="display:none;">
     <div class="box glass">
         <h3>🚀 Registro Nexus IA</h3>
         <input id="regUser" placeholder="Usuário">
         <input id="regPass" type="password" placeholder="Senha">
-        <button onclick="register()">⭐ BAIXAR ARQUIVO</button>
+        <button onclick="register()">⭐ Registrar</button>
         <span class="link" onclick="showLogin()">Já possui login? Clique aqui</span>
     </div>
 </div>
 
-<!-- LOGIN -->
-<div class="overlay" id="loginBox">
+<div class="overlay" id="loginBox" style="display:none;">
     <div class="box glass">
         <h3>🌠 Acesse o Nexus</h3>
         <input id="user" placeholder="Usuário">
@@ -183,21 +152,11 @@ function createStars(){
     }
 }
 
-// ===== ELEMENTOS =====
-const messagesDiv=document.getElementById('messages');
-const input=document.getElementById('input');
-const sendBtn=document.getElementById('sendBtn');
-const chatList=document.getElementById('chatList');
-const registerBox=document.getElementById('registerBox');
-const loginBox=document.getElementById('loginBox');
-let currentChatId=null;
-
-// ===== AUTH FUNCTIONS =====
+// ===== AUTH =====
 function checkAuth(){
     const users=JSON.parse(localStorage.getItem("users")||"[]");
-    if(users.length===0){ registerBox.style.display="flex"; } 
-    else if(!localStorage.getItem("user")){ loginBox.style.display="flex"; }
-    else{ loadChats(); }
+    if(users.length===0){ document.getElementById("registerBox").style.display="flex"; } 
+    else if(!localStorage.getItem("user")){ document.getElementById("loginBox").style.display="flex"; }
 }
 
 function register(){
@@ -209,8 +168,8 @@ function register(){
     users.push({user:u,pass:p});
     localStorage.setItem("users",JSON.stringify(users));
     alert("Registro realizado!");
-    registerBox.style.display="none"; 
-    loginBox.style.display="flex";
+    document.getElementById('registerBox').style.display="none";
+    document.getElementById('loginBox').style.display="flex";
 }
 
 function login(){
@@ -220,15 +179,23 @@ function login(){
     const found=users.find(x=>x.user===u&&x.pass===p);
     if(found){ 
         localStorage.setItem("user",u); 
-        loginBox.style.display="none"; 
+        document.getElementById('loginBox').style.display="none"; 
         loadChats();
     } else{ document.getElementById('error').textContent="Usuário ou senha incorretos!"; }
 }
 
-function showRegister(){ loginBox.style.display="none"; registerBox.style.display="flex"; }
-function showLogin(){ registerBox.style.display="none"; loginBox.style.display="flex"; }
+function showRegister(){ document.getElementById('loginBox').style.display="none"; document.getElementById('registerBox').style.display="flex"; }
+function showLogin(){ document.getElementById('registerBox').style.display="none"; document.getElementById('loginBox').style.display="flex"; }
 
-// ===== CHAT FUNCTIONS =====
+// ===== CHAT =====
+let currentChatId=null;
+let typingInterval=null;
+const messagesDiv=document.getElementById('messages');
+const input=document.getElementById('input');
+const sendBtn=document.getElementById('sendBtn');
+const stopBtn=document.getElementById('stopBtn');
+const chatList=document.getElementById('chatList');
+
 function getChats(){ 
     const user=localStorage.getItem('user'); 
     return JSON.parse(localStorage.getItem('chats_'+user)||'[]'); 
@@ -253,9 +220,9 @@ function loadChats(){
 
 function loadChat(id){
     currentChatId=id;
+    messagesDiv.innerHTML='';
     const chats=getChats();
     const chat=chats.find(c=>c.id===id);
-    messagesDiv.innerHTML='';
     if(chat) chat.messages.forEach(m=>appendMessage(m.text,m.sender));
 }
 
@@ -277,34 +244,28 @@ function clearChats(){
     }
 }
 
-function shareCurrent(){
-    const chats=getChats();
-    const chat=chats.find(c=>c.id===currentChatId);
-    if(chat){
-        const txt=chat.messages.map(m=>m.sender.toUpperCase()+': '+m.text).join('\n');
-        navigator.clipboard.writeText(txt).then(()=>alert('Chat copiado para a área de transferência!'));
-    } else alert('Nenhum chat selecionado');
-}
-
-// ===== MESSAGE APPEND =====
 function appendMessage(text,sender){
     const msg=document.createElement('div');
     msg.className='msg '+sender;
-    msg.textContent='';
-    messagesDiv.appendChild(msg);
-    messagesDiv.scrollTop=messagesDiv.scrollHeight;
-    if(sender==='bot') typeWriter(msg,text);
-    else { msg.textContent=text; messagesDiv.scrollTop=messagesDiv.scrollHeight; }
+    if(sender==='bot'){
+        msg.innerHTML=''; messagesDiv.appendChild(msg); messagesDiv.scrollTop=messagesDiv.scrollHeight;
+        typeWriter(msg,text);
+    } else {
+        msg.innerHTML=marked.parse(text);
+        messagesDiv.appendChild(msg);
+        messagesDiv.scrollTop=messagesDiv.scrollHeight;
+    }
 }
 
-// ===== TYPEWRITER EFFECT =====
+// ===== TYPING EFFECT =====
 function typeWriter(el,text){
     let i=0;
-    const interval=setInterval(()=>{
-        el.textContent+=text.charAt(i);
-        i++;
+    stopBtn.style.display='inline-block';
+    typingInterval=setInterval(()=>{
+        el.innerHTML=marked.parse(text.substring(0,i));
         messagesDiv.scrollTop=messagesDiv.scrollHeight;
-        if(i>=text.length) clearInterval(interval);
+        i++;
+        if(i>text.length){ clearInterval(typingInterval); stopBtn.style.display='none'; }
     },25);
 }
 
@@ -314,37 +275,48 @@ async function sendMessage(){
     if(!t) return;
     if(currentChatId===null) newChat();
     appendMessage(t,'user');
-    input.value='';
-    sendBtn.disabled=true;
-    appendMessage('Digitando...','bot');
+    input.value=''; sendBtn.disabled=true;
 
     try{
-        const res=await fetch('/api/chat.js',{
+        const lastBot=document.createElement('div'); lastBot.className='msg bot'; lastBot.textContent='Digitando...';
+        messagesDiv.appendChild(lastBot); messagesDiv.scrollTop=messagesDiv.scrollHeight;
+        stopBtn.style.display='inline-block';
+
+        // Simulação fetch API
+        const data=await fetch('/api/chat.js',{
             method:'POST',
             headers:{'Content-Type':'application/json'},
             body:JSON.stringify({message:t})
-        });
-        const data=await res.json();
-        const lastBot=document.querySelectorAll('.bot');
-        lastBot[lastBot.length-1].textContent=''; // limpa "Digitando..."
-        typeWriter(lastBot[lastBot.length-1],data.reply||'Erro na resposta');
+        }).then(res=>res.json());
 
+        clearInterval(typingInterval);
+        stopBtn.style.display='none';
+        lastBot.innerHTML='';
+        typeWriter(lastBot,data.reply||'Erro na resposta');
+        
+        // Salvar chat
         const chats=getChats();
         const chat=chats.find(c=>c.id===currentChatId);
-        chat.messages.push({sender:'user',text:t});
-        chat.messages.push({sender:'bot',text:data.reply||'Erro na resposta'});
-        saveChats(chats);
-    }catch(e){ console.error(e); alert("Erro ao enviar a mensagem"); }
-    sendBtn.disabled=false;
+        if(chat){
+            chat.messages.push({sender:'user',text:t});
+            chat.messages.push({sender:'bot',text:data.reply||'Erro na resposta'});
+            saveChats(chats);
+        }
+
+    }catch(e){ console.error(e); alert("Erro ao enviar a mensagem"); } finally{ sendBtn.disabled=false; }
 }
 
-// ===== ENTER KEY SEND =====
-input.addEventListener('keypress',function(e){
-    if(e.key==='Enter'){ e.preventDefault(); sendMessage(); }
-});
+function stopTyping(){
+    clearInterval(typingInterval);
+    stopBtn.style.display='none';
+}
 
-// ===== INIT =====
+sendBtn.onclick=sendMessage;
+stopBtn.onclick=stopTyping;
+
+// ===== STAR CREATION & AUTH INIT =====
 window.onload=function(){ createStars(); checkAuth(); }
 </script>
+
 </body>
 </html>
