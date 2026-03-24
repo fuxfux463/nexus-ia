@@ -97,6 +97,7 @@ body{font-family:'Orbitron', monospace; height:100vh; overflow:hidden; position:
 <div class="sidebar glass">
     <div class="logo">NEXUS <span class="bulb">💫</span></div>
     <div class="menu">
+        <button onclick="logout()">⏏️ Sair</button>
         <button onclick="newChat()">🌌 Novo Chat</button>
         <button onclick="clearChats()">🗑️ Limpar Chats</button>
     </div>
@@ -322,6 +323,12 @@ window.addEventListener('load', function() {
         loadChats();
     }
 });
+
+function logout() {
+    localStorage.removeItem("user");      // remove login
+    localStorage.removeItem("chats_" + localStorage.getItem("user")); // opcional: limpa chats temporariamente
+    location.reload();                     // recarrega a página para voltar ao login
+}
 </script>
 
 </body>
