@@ -77,8 +77,8 @@ body:JSON.stringify({message:text})
 })
 .then(r=>r.json())
 .then(data=>{
-document.querySelectorAll(".bot").pop().remove();
-addMessage(data.reply,"bot");
+const bots = document.querySelectorAll(".bot");
+bots[bots.length - 1].remove();addMessage(data.reply,"bot");
 });
 }
 
