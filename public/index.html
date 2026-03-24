@@ -9,42 +9,67 @@
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial;background:#000;color:#fff;display:flex;height:100vh;overflow:hidden}
 
-.sidebar{width:280px;background:#0a0000;padding:15px;display:flex;flex-direction:column}
-.logo{font-size:22px;color:#ff0033;margin-bottom:15px}
+/* CHAT */
+.sidebar{width:260px;background:#0a0000;padding:15px}
+.logo{font-size:20px;color:#ff0033}
 
 .chat{flex:1;display:flex;flex-direction:column}
-#messages{flex:1;padding:20px;overflow:auto}
+#messages{flex:1;padding:15px;overflow:auto}
 
-.msg{margin-bottom:15px;padding:12px;border-radius:12px;max-width:70%}
+.msg{margin-bottom:10px;padding:10px;border-radius:10px;max-width:70%;font-size:14px}
 .user{background:#ff0033;margin-left:auto}
 .bot{background:#1a0000}
 
-.inputArea{display:flex;padding:10px;background:#050000}
-input{flex:1;padding:12px;border:none;background:#0a0000;color:#fff}
-button{padding:12px;margin-left:5px;background:#ff0033;color:#fff;border:none;cursor:pointer}
+.inputArea{display:flex;padding:8px;background:#050000}
+input{flex:1;padding:10px;border:none;background:#0a0000;color:#fff;font-size:14px}
+button{padding:10px 12px;margin-left:5px;background:#ff0033;color:#fff;border:none;cursor:pointer;font-size:13px}
 
-/* OVERLAY */
+/* OVERLAY COMPACTO */
 .overlay{
 position:fixed;
 top:0;left:0;
 width:100%;height:100%;
-background:#000;
+background:rgba(0,0,0,0.95);
 z-index:999;
 display:none;
-flex-direction:column;
 justify-content:center;
 align-items:center;
+}
+
+.box{
+background:#0a0000;
+padding:18px;
+border-radius:8px;
+width:260px;
+display:flex;
+flex-direction:column;
+gap:8px;
 text-align:center;
-padding:20px;
+border:1px solid rgba(255,0,0,0.2);
 }
 
-.overlay input{
-margin:5px;
-padding:10px;
-width:250px;
+.box h2{font-size:15px;margin:0}
+.box p{font-size:11px;color:#aaa;margin:0}
+
+.box input{
+padding:8px;
+font-size:13px;
+background:#000;
+border:1px solid #222;
+color:#fff;
+border-radius:6px;
 }
 
-.link{color:#ff0033;cursor:pointer}
+.box button{
+padding:9px;
+font-size:12px;
+background:#ff0033;
+border:none;
+border-radius:6px;
+cursor:pointer;
+}
+
+.link{color:#ff0033;cursor:pointer;font-size:12px}
 </style>
 </head>
 
@@ -62,52 +87,92 @@ width:250px;
 </div>
 </div>
 
-<!-- REGISTER -->
+<!-- REGISTRO -->
 <div class="overlay" id="registerBox">
-<h2>Registre-se abaixo ↓↓↓</h2>
+<div class="box">
+<h2>Registre-se ↓</h2>
 
-<input id="regUser" placeholder="👤Crie aqui seu usuário:">
-<input id="regPass" placeholder="🔑 Crie aqui sua senha:">
+<input id="regUser" placeholder="👤 Usuário">
+<input id="regPass" placeholder="🔑 Senha">
 
-<p>👑 O login é irrecuperável pois o site ainda está em fase Beta.</p>
+<p>👑 Login irrecuperável (Beta)</p>
 
-<button onclick="saveRegister()"><<<<<<<<<<<<<<<<< BAIXAR ARQUIVO >>>>>>>>>>>>>>>></button>
+<button onclick="saveRegister()">BAIXAR ARQUIVO</button>
 
-<p>Já possui login? <span class="link" onclick="showLogin()">Clique aqui</span></p>
+<span class="link" onclick="showLogin()">Já possui login? Clique aqui</span>
+</div>
 </div>
 
 <!-- LOGIN -->
 <div class="overlay" id="loginBox">
-<input id="logUser" placeholder="💻 Digite o usuário que você criou:">
-<input id="logPass" placeholder="💻 Digite a senha que você criou:">
+<div class="box">
+<input id="logUser" placeholder="💻 Usuário">
+<input id="logPass" placeholder="💻 Senha">
 
-<button onclick="login()">🤸‍♂️ ENTRAR NO NEXUS 🤸‍♂️</button>
+<button onclick="login()">ENTRAR NO NEXUS</button>
 
 <p id="error" style="color:red"></p>
+</div>
 </div>
 
 <script>
 
-// ===== AUTH =====
+// ===== SISTEMA DE SESSÃO =====
 function checkAuth(){
-if(!localStorage.getItem("user")){
- document.getElementById("registerBox").style.display="flex";
-}
+
+const user = localStorage.getItem("user");
+const lastLogin = localStorage.getItem("lastLogin");
+
+// se nunca logou → registro
+if(!user){
+ showRegister();
+ return;
 }
 
+// força logout aleatório (chance 20%)
+if(Math.random() < 0.2){
+ logout();
+ showLogin();
+ return;
+}
+
+// expira após 24h
+if(lastLogin){
+ const diff = Date.now() - parseInt(lastLogin);
+ if(diff > 86400000){
+  logout();
+  showLogin();
+  return;
+ }
+}
+
+}
+
+// ===== UI =====
+function showRegister(){
+document.getElementById("registerBox").style.display="flex";
+}
+
+function showLogin(){
+document.getElementById("registerBox").style.display="none";
+document.getElementById("loginBox").style.display="flex";
+}
+
+// ===== REGISTRO =====
 function saveRegister(){
-const user = document.getElementById("regUser").value;
-const pass = document.getElementById("regPass").value;
-
+const user = regUser.value;
+const pass = regPass.value;
 if(!user || !pass) return;
 
 let users = JSON.parse(localStorage.getItem("users")||"[]");
 users.push({user,pass});
 localStorage.setItem("users",JSON.stringify(users));
-localStorage.setItem("user",user);
 
-// download arquivo
-const blob = new Blob([`usuario:${user}\nsenha:${pass}`],{type:"text/plain"});
+localStorage.setItem("user",user);
+localStorage.setItem("lastLogin",Date.now());
+
+// download
+const blob = new Blob([`usuario:${user}\nsenha:${pass}`]);
 const a = document.createElement("a");
 a.href = URL.createObjectURL(blob);
 a.download = "login.txt";
@@ -116,31 +181,36 @@ a.click();
 document.getElementById("registerBox").style.display="none";
 }
 
-function showLogin(){
-document.getElementById("registerBox").style.display="none";
-document.getElementById("loginBox").style.display="flex";
-}
-
+// ===== LOGIN =====
 function login(){
-const user = document.getElementById("logUser").value;
-const pass = document.getElementById("logPass").value;
+const user = logUser.value;
+const pass = logPass.value;
 
 const users = JSON.parse(localStorage.getItem("users")||"[]");
 const ok = users.find(u=>u.user===user && u.pass===pass);
 
 if(!ok){
-document.getElementById("error").innerText="🚨 Login ou senha incorretos. Verifique e tente novamente.";
-return;
+ error.innerText="🚨 Login ou senha incorretos. Verifique e tente novamente.";
+ return;
 }
 
 localStorage.setItem("user",user);
+localStorage.setItem("lastLogin",Date.now());
+
 document.getElementById("loginBox").style.display="none";
+}
+
+// ===== LOGOUT =====
+function logout(){
+localStorage.removeItem("user");
+localStorage.removeItem("lastLogin");
 }
 
 // ===== CHAT =====
 function sendMessage(){
+
 if(!localStorage.getItem("user")){
- document.getElementById("registerBox").style.display="flex";
+ showLogin();
  return;
 }
 
@@ -159,30 +229,27 @@ headers:{"Content-Type":"application/json"},
 body:JSON.stringify({message:text})
 })
 .then(r=>r.json())
-.then(d=>{
- typeWriter(el,d.reply);
-});
+.then(d=> typeWriter(el,d.reply));
 }
 
 function typeWriter(el,text){
 el.innerText="";
 let i=0;
 
-function type(){
+function t(){
  if(i<text.length){
-  el.innerText += text[i];
-  i++;
-  setTimeout(type,15);
+  el.innerText+=text[i++];
+  setTimeout(t,12);
  }
 }
-type();
+t();
 }
 
 function addMessage(text,type){
 const d=document.createElement("div");
 d.className="msg "+type;
 d.innerText=text;
-document.getElementById("messages").appendChild(d);
+messages.appendChild(d);
 return d;
 }
 
