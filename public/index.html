@@ -141,7 +141,7 @@ body {
     <div id="messages"></div>
     <div class="inputArea glass">
         <input id="input" placeholder="Digite sua mensagem para a IA espacial... 🚀">
-        <button onclick="sendMessage()">Enviar 💬</button>
+        <button id="sendBtn" onclick="sendMessage()">Enviar 💬</button>
     </div>
 </div>
 
@@ -170,190 +170,84 @@ body {
 
 <script>
 // ===== CRIAÇÃO DAS ESTRELAS =====
-function createStars() {
+function createStars(){
     const starsContainer = document.getElementById('stars');
-    for (let i = 0; i < 200; i++) {
-        const star = document.createElement('div');
-        star.className = 'star';
-        star.style.left = Math.random() * 100 + '%';
-        star.style.top = Math.random() * 100 + '%';
-        star.style.width = Math.random() * 3 + 'px';
-        star.style.height = star.style.width;
-        star.style.animationDelay = Math.random() * 3 + 's';
-        star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+    for(let i=0;i<200;i++){
+        const star=document.createElement('div');
+        star.className='star';
+        star.style.left=Math.random()*100+'%';
+        star.style.top=Math.random()*100+'%';
+        star.style.width=Math.random()*3+'px';
+        star.style.height=star.style.width;
+        star.style.animationDelay=Math.random()*3+'s';
+        star.style.animationDuration=(Math.random()*3+2)+'s';
         starsContainer.appendChild(star);
     }
 }
 
 // ===== AUTH =====
 function checkAuth(){
-    const users = JSON.parse(localStorage.getItem("users")||"[]");
+    const users=JSON.parse(localStorage.getItem("users")||"[]");
     if(users.length===0){ registerBox.style.display="flex"; } 
     else if(!localStorage.getItem("user")){ loginBox.style.display="flex"; }
 }
 
 function register(){
-    const u = regUser.value, p = regPass.value;
-    if(!u || !p) return alert("Preencha todos os campos!");
-
-    let users = JSON.parse(localStorage.getItem("users") || "[]");
-    if(users.find(x => x.user === u)) return alert("Usuário já existe!");
-
-    users.push({user: u, pass: p});
-    localStorage.setItem("users", JSON.stringify(users));
-    localStorage.setItem("user", u);
-
-    // Cria arquivo de backup
-    const blob = new Blob([`user: ${u}\npass: ${p}\n\n✅ Credenciais salvas com sucesso!`], {type: 'text/plain'});
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "nexus_login.txt";
-    a.click();
-
-    registerBox.style.display = "none";
-    alert("✅ Registrado! Use o arquivo para backup.");
+    const u=regUser.value, p=regPass.value;
+    if(!u||!p) return alert("Preencha todos os campos!");
+    let users=JSON.parse(localStorage.getItem("users")||"[]");
+    users.push({user:u,pass:p});
+    localStorage.setItem("users",JSON.stringify(users));
+    alert("Registro realizado!");
+    registerBox.style.display="none"; loginBox.style.display="flex";
 }
-
-function showLogin(){ registerBox.style.display = "none"; loginBox.style.display = "flex"; }
-function showRegister(){ loginBox.style.display = "none"; registerBox.style.display = "flex"; }
-
 function login(){
-    const u = user.value, p = pass.value;
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
-    const ok = users.find(x => x.user === u && x.pass === p);
-
-    if(!ok){
-        error.innerText = "🚨 Usuário ou senha incorretos!";
-        setTimeout(() => error.innerText = "", 3000);
-        return;
-    }
-
-    localStorage.setItem("user", u);
-    loginBox.style.display = "none";
-    alert("🎉 Bem-vindo ao NEXUS IA!");
+    const u=user.value, p=pass.value;
+    let users=JSON.parse(localStorage.getItem("users")||"[]");
+    const found=users.find(x=>x.user===u&&x.pass===p);
+    if(found){ localStorage.setItem("user",u); loginBox.style.display="none"; } 
+    else{ error.textContent="Usuário ou senha incorretos!"; }
 }
+function showRegister(){ loginBox.style.display="none"; registerBox.style.display="flex"; }
+function showLogin(){ registerBox.style.display="none"; loginBox.style.display="flex"; }
 
 // ===== CHAT =====
-let chats = JSON.parse(localStorage.getItem("chats") || "[]");
-let currentChat = null;
-
-function saveChats(){ localStorage.setItem("chats", JSON.stringify(chats)); renderChats(); }
-function renderChats(){
-    chatList.innerHTML = "";
-    chats.forEach((c, i) => {
-        const d = document.createElement("div");
-        d.className = "chatItem";
-        d.innerHTML = `💬 ${c.title}`;
-        d.onclick = () => loadChat(i);
-        chatList.appendChild(d);
-    });
+const messagesDiv=document.getElementById('messages');
+const input=document.getElementById('input');
+const sendBtn=document.getElementById('sendBtn');
+function appendMessage(text,sender){
+    const msg=document.createElement('div');
+    msg.className='msg '+sender;
+    msg.textContent=text;
+    messagesDiv.appendChild(msg);
+    messagesDiv.scrollTop=messagesDiv.scrollHeight;
 }
-
-function newChat(){ currentChat = {title: "Novo Chat", messages: []}; chats.unshift(currentChat); saveChats(); loadChat(0); }
-function clearChats(){
-    if(confirm("🗑️ Deseja apagar TODOS os chats?")){
-        chats = [];
-        saveChats();
-        messages.innerHTML = "";
-        currentChat = null;
-    }
-}
-function loadChat(i){
-    currentChat = chats[i];
-    messages.innerHTML = "";
-    currentChat.messages.forEach(m => addMessage(m.text, m.type));
-    messages.scrollTop = messages.scrollHeight;
-}
-
-// ===== SEND MESSAGE =====
 async function sendMessage(){
-    if(!localStorage.getItem("user")){
-        loginBox.style.display = "flex";
-        return;
-    }
-
-    const t = input.value.trim();
+    const t=input.value.trim();
     if(!t) return;
-
-    addMessage(t, "user");
-    saveMsg(t, "user");
-    input.value = "";
-
-    const el = addMessage("🤖 Nexus IA está processando...", "bot");
-
-    try {
-        const res = await fetch("/api/chat.js", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ prompt: t })
+    appendMessage(t,'user');
+    input.value='';
+    sendBtn.disabled=true;
+    appendMessage('Digitando...','bot');
+    try{
+        const res=await fetch('/api/chat.js',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({message:t})
         });
-        const data = await res.json();
-        el.innerText = data.reply; 
-        saveMsg(data.reply, "bot");
-    } catch(err) {
-        el.innerText = "❌ Erro ao processar a resposta.";
-        console.error(err);
-    }
+        const data=await res.json();
+        const lastBot=document.querySelectorAll('.bot');
+        lastBot[lastBot.length-1].textContent=data.reply||"Erro na resposta";
+    }catch(e){ console.error(e); alert("Erro ao enviar a mensagem"); }
+    sendBtn.disabled=false;
 }
 
-function saveMsg(t, type){
-    if(!currentChat) newChat();
-    currentChat.messages.push({text: t, type});
-    if(currentChat.messages.length === 1) currentChat.title = t.slice(0, 30);
-    saveChats();
-}
+// ===== CHATS =====
+function newChat(){ messagesDiv.innerHTML=''; }
+function clearChats(){ chatList.innerHTML=''; }
+function shareCurrent(){ alert("Função de compartilhar ainda não implementada"); }
 
-function addMessage(t, type){
-    const d = document.createElement("div");
-    d.className = `msg ${type}`;
-    d.innerText = t;
-    messages.appendChild(d);
-    messages.scrollTop = messages.scrollHeight;
-    return d;
-}
-
-// ===== SHARE =====
-function generateId(){ return Math.random().toString(36).substring(2,10); }
-function shareCurrent(){
-    if(!currentChat) return alert("Nenhum chat ativo!");
-    const id = generateId();
-    localStorage.setItem("share_" + id, JSON.stringify(currentChat));
-    const link = location.origin + location.pathname + "?chat=" + id;
-    navigator.clipboard.writeText(link).then(() => { alert("🔗 Link copiado!\n\n" + link); });
-}
-function loadShared(){
-    const params = new URLSearchParams(location.search);
-    const id = params.get("chat");
-    if(id){
-        const data = localStorage.getItem("share_" + id);
-        if(data){
-            const chat = JSON.parse(data);
-            messages.innerHTML = "";
-            chat.messages.forEach(m => addMessage(m.text, m.type));
-            alert("📥 Chat compartilhado carregado!");
-        }
-    }
-}
-
-// ===== INPUT ENTER =====
-input.addEventListener("keypress", function(e){ if(e.key === "Enter") sendMessage(); });
-
-// ===== INIT =====
-window.addEventListener("load", function(){ createStars(); checkAuth(); renderChats(); loadShared(); if(chats.length === 0) newChat(); });
-
-// ===== EFEITOS MOUSE =====
-document.addEventListener("mousemove", function(e){
-    const stars = document.querySelectorAll('.star');
-    stars.forEach(star => {
-        const rect = star.getBoundingClientRect();
-        const dx = e.clientX - rect.left;
-        const dy = e.clientY - rect.top;
-        const distance = Math.sqrt(dx*dx + dy*dy);
-        const maxDistance = 200;
-        const intensity = Math.max(0, (maxDistance - distance) / maxDistance);
-        star.style.transform = `scale(${1 + intensity * 0.5})`;
-    });
-});
+window.onload=function(){ createStars(); checkAuth(); }
 </script>
 </body>
 </html>
