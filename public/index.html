@@ -7,63 +7,130 @@
 
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial;background:#000;color:#fff;display:flex;height:100vh;overflow:hidden}
+body{margin:0;font-family:Arial;background:#f5f9ff;color:#111;display:flex;height:100vh}
 
 /* SIDEBAR */
-.sidebar{width:260px;background:#0a0000;padding:15px;display:flex;flex-direction:column}
-.logo{font-size:20px;color:#ff0033;margin-bottom:10px}
-
-.menu button{
-margin-bottom:5px;
-padding:8px;
-background:#111;
-border:none;
-color:#fff;
-cursor:pointer;
+.sidebar{
+width:240px;
+background:#ffffff;
+border-right:1px solid #ddd;
+padding:10px;
+display:flex;
+flex-direction:column;
 }
 
-.chatList{flex:1;overflow:auto}
-.chatItem{padding:8px;background:#111;margin-bottom:5px;display:flex;justify-content:space-between;cursor:pointer}
+.logo{
+font-size:26px;
+font-weight:bold;
+color:#007bff;
+display:flex;
+align-items:center;
+gap:5px;
+}
 
-.menuDots{cursor:pointer}
+/* lâmpada animada */
+.bulb{
+animation:blink 1s infinite;
+}
+@keyframes blink{
+0%,100%{opacity:1}
+50%{opacity:0.3}
+}
+
+.menu button{
+margin-top:5px;
+padding:8px;
+background:#007bff;
+color:#fff;
+border:none;
+cursor:pointer;
+font-size:13px;
+}
+
+/* CHAT LIST */
+.chatList{flex:1;overflow:auto;margin-top:10px}
+.chatItem{
+padding:6px;
+border-bottom:1px solid #eee;
+cursor:pointer;
+font-size:13px;
+}
 
 /* CHAT */
 .chat{flex:1;display:flex;flex-direction:column}
-#messages{flex:1;padding:15px;overflow:auto}
+#messages{flex:1;padding:10px;overflow:auto}
 
-.msg{margin-bottom:10px;padding:10px;border-radius:10px;max-width:70%}
-.user{background:#ff0033;margin-left:auto}
-.bot{background:#1a0000}
+.msg{
+margin-bottom:8px;
+padding:8px;
+border-radius:8px;
+max-width:70%;
+font-size:13px;
+}
 
-.inputArea{display:flex;padding:8px;background:#050000}
-input{flex:1;padding:10px;border:none;background:#0a0000;color:#fff}
-button{padding:10px;margin-left:5px;background:#ff0033;color:#fff;border:none;cursor:pointer}
+.user{background:#007bff;color:#fff;margin-left:auto}
+.bot{background:#e9f1ff}
+
+.inputArea{
+display:flex;
+padding:8px;
+background:#fff;
+border-top:1px solid #ddd;
+}
+
+input{
+flex:1;
+padding:8px;
+border:1px solid #ccc;
+}
+
+button{
+padding:8px;
+margin-left:5px;
+background:#007bff;
+color:#fff;
+border:none;
+cursor:pointer;
+}
 
 /* OVERLAY */
 .overlay{
-position:fixed;top:0;left:0;width:100%;height:100%;
-background:#000;display:none;justify-content:center;align-items:center;z-index:999;
+position:fixed;
+top:0;left:0;
+width:100%;height:100%;
+background:rgba(0,0,0,0.9);
+display:none;
+justify-content:center;
+align-items:center;
+z-index:999;
 }
 
 .box{
-background:#0a0000;padding:15px;border-radius:8px;width:260px;
-display:flex;flex-direction:column;gap:8px;text-align:center;
+background:#fff;
+padding:15px;
+border-radius:8px;
+width:250px;
+display:flex;
+flex-direction:column;
+gap:8px;
+text-align:center;
 }
 
-.box input{padding:8px;background:#000;color:#fff;border:1px solid #222}
-.box button{padding:8px;background:#ff0033;border:none;color:#fff}
-.link{color:#ff0033;cursor:pointer;font-size:12px}
+.box input{padding:6px}
+.box button{background:#007bff;color:#fff;border:none;padding:6px}
+.link{color:#007bff;cursor:pointer;font-size:12px}
 </style>
 </head>
 
 <body>
 
 <div class="sidebar">
-<div class="logo">NEXUS</div>
+<div class="logo">NEXUS <span class="bulb">💡</span></div>
 
 <div class="menu">
-<button onclick="newChat()">➕ Novo Chat</button>
-<button onclick="clearChats()">🧹 Limpar Chats</button>
+<button onclick="newChat()">Novo Chat</button>
+<button onclick="clearChats()">Limpar Chats</button>
+<button onclick="shareCurrent()">Compartilhar Chat</button>
 </div>
 
 <div class="chatList" id="chatList"></div>
@@ -78,24 +145,13 @@ display:flex;flex-direction:column;gap:8px;text-align:center;
 </div>
 </div>
 
-<!-- REGISTER -->
-<div class="overlay" id="registerBox">
-<div class="box">
-<h3>Registre-se ↓</h3>
-<input id="regUser" placeholder="Usuário">
-<input id="regPass" placeholder="Senha">
-<button onclick="saveRegister()">BAIXAR ARQUIVO</button>
-<span class="link" onclick="showLogin()">Já possui login? Clique aqui</span>
-</div>
-</div>
-
 <!-- LOGIN -->
 <div class="overlay" id="loginBox">
 <div class="box">
-<input id="logUser" placeholder="Usuário">
-<input id="logPass" placeholder="Senha">
-<button onclick="login()">ENTRAR</button>
-<p id="error" style="color:red"></p>
+<input id="user" placeholder="Usuário">
+<input id="pass" placeholder="Senha">
+<button onclick="login()">Entrar</button>
+<p id="error"></p>
 </div>
 </div>
 
@@ -103,51 +159,13 @@ display:flex;flex-direction:column;gap:8px;text-align:center;
 
 // ===== AUTH =====
 function checkAuth(){
-const user = localStorage.getItem("user");
-if(!user) showRegister();
-}
-
-function showRegister(){
-registerBox.style.display="flex";
-}
-
-function showLogin(){
-registerBox.style.display="none";
+if(!localStorage.getItem("user")){
 loginBox.style.display="flex";
 }
-
-function saveRegister(){
-const user = regUser.value;
-const pass = regPass.value;
-
-let users = JSON.parse(localStorage.getItem("users")||"[]");
-users.push({user,pass});
-localStorage.setItem("users",JSON.stringify(users));
-
-localStorage.setItem("user",user);
-
-const blob = new Blob([`user:${user}\npass:${pass}`]);
-const a = document.createElement("a");
-a.href = URL.createObjectURL(blob);
-a.download="login.txt";
-a.click();
-
-registerBox.style.display="none";
 }
 
 function login(){
-const user = logUser.value;
-const pass = logPass.value;
-
-const users = JSON.parse(localStorage.getItem("users")||"[]");
-const ok = users.find(u=>u.user===user && u.pass===pass);
-
-if(!ok){
-error.innerText="🚨 Login ou senha incorretos. Verifique e tente novamente.";
-return;
-}
-
-localStorage.setItem("user",user);
+localStorage.setItem("user",user.value);
 loginBox.style.display="none";
 }
 
@@ -165,18 +183,8 @@ chatList.innerHTML="";
 chats.forEach((c,i)=>{
 const div=document.createElement("div");
 div.className="chatItem";
-
-const title=document.createElement("span");
-title.innerText=c.title;
-title.onclick=()=>loadChat(i);
-
-const dots=document.createElement("span");
-dots.className="menuDots";
-dots.innerText="⋯";
-dots.onclick=()=>deleteChat(i);
-
-div.appendChild(title);
-div.appendChild(dots);
+div.innerText=c.title;
+div.onclick=()=>loadChat(i);
 chatList.appendChild(div);
 });
 }
@@ -189,13 +197,16 @@ loadChat(0);
 }
 
 function clearChats(){
+const opt = prompt("Digite:\n1 - apagar todos\n2 - apagar por índice");
+
+if(opt==="1"){
 chats=[];
-saveChats();
-messages.innerHTML="";
+}
+else if(opt==="2"){
+const i = prompt("Digite o índice:");
+chats.splice(i,1);
 }
 
-function deleteChat(i){
-chats.splice(i,1);
 saveChats();
 messages.innerHTML="";
 }
@@ -207,9 +218,8 @@ currentChat.messages.forEach(m=>addMessage(m.text,m.type));
 }
 
 function sendMessage(){
-
 if(!localStorage.getItem("user")){
-showLogin();
+loginBox.style.display="flex";
 return;
 }
 
@@ -229,7 +239,7 @@ body:JSON.stringify({message:text})
 })
 .then(r=>r.json())
 .then(d=>{
-el.innerText = d.reply; // SEM ANIMAÇÃO
+el.innerText=d.reply;
 saveMsg(d.reply,"bot");
 });
 }
@@ -237,7 +247,7 @@ saveMsg(d.reply,"bot");
 function saveMsg(text,type){
 if(!currentChat)newChat();
 currentChat.messages.push({text,type});
-if(currentChat.messages.length===1)currentChat.title=text.slice(0,25);
+if(currentChat.messages.length===1)currentChat.title=text.slice(0,20);
 saveChats();
 }
 
@@ -249,9 +259,42 @@ messages.appendChild(d);
 return d;
 }
 
+// ===== SHARE =====
+function generateId(){
+return Math.random().toString(36).substring(2,10);
+}
+
+function shareCurrent(){
+if(!currentChat) return;
+
+const id = generateId();
+localStorage.setItem("share_"+id, JSON.stringify(currentChat));
+
+const link = location.origin + location.pathname + "?chat=" + id;
+
+navigator.clipboard.writeText(link);
+alert("Link copiado!");
+}
+
+// carregar link
+function loadShared(){
+const params = new URLSearchParams(location.search);
+const id = params.get("chat");
+
+if(id){
+const data = localStorage.getItem("share_"+id);
+if(data){
+const chat = JSON.parse(data);
+messages.innerHTML="";
+chat.messages.forEach(m=>addMessage(m.text,m.type));
+}
+}
+}
+
 // INIT
 checkAuth();
 renderChats();
+loadShared();
 
 </script>
 
