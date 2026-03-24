@@ -64,9 +64,7 @@ body {
 /* CHAT LIST */
 .chatList { flex:1; overflow:auto; margin-top:20px; display:flex; flex-direction:column; gap:8px; padding-right:10px; }
 .chatItem { padding:12px 16px; border:2px solid rgba(0,123,255,0.3); border-radius:12px; cursor:pointer; font-size:14px; transition:all 0.3s ease; position:relative; overflow:hidden; }
-.chatItem::before { content:''; position:absolute; top:0; left:0; right:0; height:100%; background:linear-gradient(145deg, rgba(0,123,255,0.1), transparent); opacity:0; transition:opacity 0.3s; }
 .chatItem:hover { background: rgba(0,123,255,0.15); border-color:#00d4ff; transform:translateX(5px); box-shadow:0 8px 20px rgba(0,123,255,0.2); }
-.chatItem:hover::before { opacity:1; }
 
 /* CHAT */
 .chat { flex:1; display:flex; flex-direction:column; position:relative; }
@@ -110,6 +108,7 @@ body {
     .planet2{width:40px;height:40px;}
 }
 </style>
+</head>
 <body>
 
 <!-- FUNDO ESPACIAL 4K -->
@@ -184,15 +183,16 @@ function createStars(){
     }
 }
 
-// ===== AUTH =====
-const registerBox=document.getElementById('registerBox');
-const loginBox=document.getElementById('loginBox');
+// ===== ELEMENTOS =====
 const messagesDiv=document.getElementById('messages');
 const input=document.getElementById('input');
 const sendBtn=document.getElementById('sendBtn');
 const chatList=document.getElementById('chatList');
+const registerBox=document.getElementById('registerBox');
+const loginBox=document.getElementById('loginBox');
 let currentChatId=null;
 
+// ===== AUTH FUNCTIONS =====
 function checkAuth(){
     const users=JSON.parse(localStorage.getItem("users")||"[]");
     if(users.length===0){ registerBox.style.display="flex"; } 
@@ -201,7 +201,8 @@ function checkAuth(){
 }
 
 function register(){
-    const u=regUser.value, p=regPass.value;
+    const u=document.getElementById('regUser').value;
+    const p=document.getElementById('regPass').value;
     if(!u||!p) return alert("Preencha todos os campos!");
     let users=JSON.parse(localStorage.getItem("users")||"[]");
     if(users.find(x=>x.user===u)) return alert("Usuário já existe!");
@@ -213,7 +214,8 @@ function register(){
 }
 
 function login(){
-    const u=user.value, p=pass.value;
+    const u=document.getElementById('user').value;
+    const p=document.getElementById('pass').value;
     let users=JSON.parse(localStorage.getItem("users")||"[]");
     const found=users.find(x=>x.user===u&&x.pass===p);
     if(found){ 
@@ -222,31 +224,11 @@ function login(){
         loadChats();
     } else{ document.getElementById('error').textContent="Usuário ou senha incorretos!"; }
 }
+
 function showRegister(){ loginBox.style.display="none"; registerBox.style.display="flex"; }
 function showLogin(){ registerBox.style.display="none"; loginBox.style.display="flex"; }
 
-// ===== CHAT =====
-function appendMessage(text,sender){
-    const msg=document.createElement('div');
-    msg.className='msg '+sender;
-    msg.textContent='';
-    messagesDiv.appendChild(msg);
-    messagesDiv.scrollTop=messagesDiv.scrollHeight;
-    if(sender==='bot'){ typeWriter(msg,text); } else { msg.textContent=text; messagesDiv.scrollTop=messagesDiv.scrollHeight; }
-}
-
-// ===== TYPING EFFECT =====
-function typeWriter(el,text){
-    let i=0;
-    const interval=setInterval(()=>{
-        el.textContent+=text.charAt(i);
-        i++;
-        messagesDiv.scrollTop=messagesDiv.scrollHeight;
-        if(i>=text.length) clearInterval(interval);
-    },25);
-}
-
-// ===== CHAT STORAGE =====
+// ===== CHAT FUNCTIONS =====
 function getChats(){ 
     const user=localStorage.getItem('user'); 
     return JSON.parse(localStorage.getItem('chats_'+user)||'[]'); 
@@ -255,6 +237,7 @@ function saveChats(chats){
     const user=localStorage.getItem('user'); 
     localStorage.setItem('chats_'+user,JSON.stringify(chats)); 
 }
+
 function loadChats(){
     chatList.innerHTML='';
     const chats=getChats();
@@ -265,17 +248,17 @@ function loadChats(){
         div.onclick=()=>{ loadChat(chat.id); };
         chatList.appendChild(div);
     });
-    if(chats.length>0){ loadChat(chats[chats.length-1].id); }
+    if(chats.length>0) loadChat(chats[chats.length-1].id);
 }
+
 function loadChat(id){
     currentChatId=id;
     const chats=getChats();
     const chat=chats.find(c=>c.id===id);
     messagesDiv.innerHTML='';
-    if(chat){
-        chat.messages.forEach(m=>appendMessage(m.text,m.sender));
-    }
+    if(chat) chat.messages.forEach(m=>appendMessage(m.text,m.sender));
 }
+
 function newChat(){
     const chats=getChats();
     const id=Date.now();
@@ -284,6 +267,7 @@ function newChat(){
     saveChats(chats);
     loadChats();
 }
+
 function clearChats(){
     if(confirm('Deseja limpar todos os chats?')){
         localStorage.removeItem('chats_'+localStorage.getItem('user'));
@@ -292,6 +276,7 @@ function clearChats(){
         currentChatId=null;
     }
 }
+
 function shareCurrent(){
     const chats=getChats();
     const chat=chats.find(c=>c.id===currentChatId);
@@ -301,17 +286,39 @@ function shareCurrent(){
     } else alert('Nenhum chat selecionado');
 }
 
+// ===== MESSAGE APPEND =====
+function appendMessage(text,sender){
+    const msg=document.createElement('div');
+    msg.className='msg '+sender;
+    msg.textContent='';
+    messagesDiv.appendChild(msg);
+    messagesDiv.scrollTop=messagesDiv.scrollHeight;
+    if(sender==='bot') typeWriter(msg,text);
+    else { msg.textContent=text; messagesDiv.scrollTop=messagesDiv.scrollHeight; }
+}
+
+// ===== TYPEWRITER EFFECT =====
+function typeWriter(el,text){
+    let i=0;
+    const interval=setInterval(()=>{
+        el.textContent+=text.charAt(i);
+        i++;
+        messagesDiv.scrollTop=messagesDiv.scrollHeight;
+        if(i>=text.length) clearInterval(interval);
+    },25);
+}
+
 // ===== SEND MESSAGE =====
 async function sendMessage(){
     const t=input.value.trim();
-    if(!t || currentChatId===null) return;
+    if(!t) return;
+    if(currentChatId===null) newChat();
     appendMessage(t,'user');
     input.value='';
     sendBtn.disabled=true;
     appendMessage('Digitando...','bot');
 
     try{
-        // Aqui você coloca seu fetch real para /api/chat.js
         const res=await fetch('/api/chat.js',{
             method:'POST',
             headers:{'Content-Type':'application/json'},
@@ -319,10 +326,9 @@ async function sendMessage(){
         });
         const data=await res.json();
         const lastBot=document.querySelectorAll('.bot');
-        lastBot[lastBot.length-1].textContent=''; // Limpa "Digitando..."
+        lastBot[lastBot.length-1].textContent=''; // limpa "Digitando..."
         typeWriter(lastBot[lastBot.length-1],data.reply||'Erro na resposta');
 
-        // Salva no chat
         const chats=getChats();
         const chat=chats.find(c=>c.id===currentChatId);
         chat.messages.push({sender:'user',text:t});
@@ -331,6 +337,11 @@ async function sendMessage(){
     }catch(e){ console.error(e); alert("Erro ao enviar a mensagem"); }
     sendBtn.disabled=false;
 }
+
+// ===== ENTER KEY SEND =====
+input.addEventListener('keypress',function(e){
+    if(e.key==='Enter'){ e.preventDefault(); sendMessage(); }
+});
 
 // ===== INIT =====
 window.onload=function(){ createStars(); checkAuth(); }
