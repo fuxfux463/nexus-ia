@@ -190,12 +190,11 @@ function checkAuth(){
 
 function showOverlay(id){
     document.getElementById(id).classList.add('active');
-    document.body.style.filter='blur(6px)';
-}
+    document.getElementById('spaceBg').style.filter = 'blur(6px)';}
 
 function hideOverlay(id){
-    document.getElementById(id).classList.remove('active');
-    document.body.style.filter='none';
+    document.getElementById(id).classList.remove('active'); // esconde o overlay
+    document.getElementById('spaceBg').style.filter = 'none'; // remove o blur do fundo
 }
 
 function register(){
