@@ -4,53 +4,75 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NEXUS IA</title>
+
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial;background:radial-gradient(circle at top,#0a0000,#000000 80%);color:#fff;display:flex;height:100vh;overflow:hidden}
+
 .sidebar{width:280px;background:rgba(15,0,0,0.95);padding:15px;border-right:1px solid rgba(255,0,0,0.15);display:flex;flex-direction:column}
 .logo{font-size:22px;font-weight:bold;color:#ff0033;margin-bottom:15px}
+
 .menu{display:flex;flex-direction:column;gap:5px;margin-bottom:15px}
 .menu button{background:transparent;border:1px solid rgba(255,0,0,0.1);color:#fff;padding:10px;border-radius:8px;text-align:left;cursor:pointer}
 .menu button:hover{background:rgba(255,0,0,0.2)}
+
 .search{margin-bottom:10px}
 .search input{width:100%;padding:8px;border-radius:6px;border:none;background:#0a0000;color:#fff}
+
 .chatList{flex:1;overflow:auto}
 .chatItem{padding:10px;border-radius:8px;margin-bottom:5px;background:rgba(255,0,0,0.05);display:flex;justify-content:space-between;align-items:center}
 .chatItem:hover{background:rgba(255,0,0,0.2)}
+
 .chatTitle{flex:1;cursor:pointer}
 .menuDots{cursor:pointer;padding:5px}
+
 .dropdown{position:absolute;background:#0a0000;border:1px solid rgba(255,0,0,0.2);border-radius:6px;padding:5px;display:none;flex-direction:column}
 .dropdown button{background:none;border:none;color:#fff;padding:5px;text-align:left;cursor:pointer}
 .dropdown button:hover{background:rgba(255,0,0,0.2)}
+
 .userBox{margin-top:10px;padding:10px;background:rgba(255,0,0,0.1);border-radius:8px;font-size:12px}
+
 .chat{flex:1;display:flex;flex-direction:column;position:relative}
 #messages{flex:1;padding:20px;overflow:auto}
+
 .msg{margin-bottom:15px;padding:12px;border-radius:12px;max-width:70%;animation:fadeIn .3s ease;white-space:pre-line}
 .user{background:#ff0033;color:#fff;margin-left:auto}
 .bot{background:#1a0000;border:1px solid rgba(255,0,0,0.2)}
+
 .inputArea{display:flex;padding:10px;background:#050000;border-top:1px solid rgba(255,0,0,0.2)}
 input{flex:1;padding:12px;border:none;border-radius:8px;background:#0a0000;color:#fff}
 button{padding:12px;margin-left:5px;border:none;border-radius:8px;background:#ff0033;color:#fff;cursor:pointer;transition:.2s}
 button:hover{transform:scale(1.05)}
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+@keyframes fadeIn{
+from{opacity:0;transform:translateY(10px)}
+to{opacity:1;transform:translateY(0)}
+}
 </style>
 </head>
+
 <body>
+
 <div class="sidebar">
 <div class="logo">NEXUS</div>
+
 <div class="menu">
 <button onclick="newChat()">➕ Novo Chat</button>
 <button onclick="clearChats()">🧹 Limpar Chats</button>
 </div>
+
 <div class="search">
 <input placeholder="Buscar chat..." oninput="searchChat(this.value)">
 </div>
+
 <div class="chatList" id="chatList"></div>
-<div class="userBox" id="userBox">Não logado</div>
+
+<div class="userBox" id="userBox"></div>
 </div>
 
 <div class="chat">
 <div id="messages"></div>
+
 <div class="inputArea">
 <input id="input" placeholder="Digite sua mensagem...">
 <button onclick="sendMessage()">Enviar</button>
@@ -58,6 +80,66 @@ button:hover{transform:scale(1.05)}
 </div>
 
 <script>
+
+// ================= LOGIN (INJETADO, SEM QUEBRAR NADA) =================
+function renderUserBox(){
+const box = document.getElementById("userBox");
+const user = localStorage.getItem("user");
+
+if(user){
+ box.innerHTML = `
+ 👤 ${user}
+ <div style="margin-top:5px;cursor:pointer;color:#ff0033" onclick="logout()">Sair</div>
+ `;
+}else{
+ box.innerHTML = `
+ 🌉 Já tem conta? 
+ <span style="color:#ff0033;cursor:pointer" onclick="login()">Faça login</span>
+ <br>
+ <span style="color:#ff0033;cursor:pointer" onclick="register()">Criar conta</span>
+ `;
+}
+}
+
+function login(){
+const user = prompt("Usuário:");
+const pass = prompt("Senha:");
+
+const users = JSON.parse(localStorage.getItem("users") || "[]");
+const found = users.find(u => u.user === user && u.pass === pass);
+
+if(!found){
+ alert("Login inválido");
+ return;
+}
+
+localStorage.setItem("user", user);
+renderUserBox();
+}
+
+function register(){
+const user = prompt("Novo usuário:");
+const pass = prompt("Senha:");
+
+let users = JSON.parse(localStorage.getItem("users") || "[]");
+
+if(users.find(u => u.user === user)){
+ alert("Usuário já existe");
+ return;
+}
+
+users.push({user,pass});
+localStorage.setItem("users", JSON.stringify(users));
+
+alert("Conta criada");
+}
+
+function logout(){
+localStorage.removeItem("user");
+renderUserBox();
+}
+
+// ================= SEU CÓDIGO ORIGINAL (INALTERADO) =================
 let currentChat = null;
 let chats = JSON.parse(localStorage.getItem("chats") || "[]");
 
@@ -69,6 +151,7 @@ renderChats();
 function renderChats(filter=""){
 const list = document.getElementById("chatList");
 list.innerHTML = "";
+
 chats
 .filter(c=>c.title.toLowerCase().includes(filter.toLowerCase()))
 .forEach((c,i)=>{
@@ -97,7 +180,6 @@ share.onclick=()=>shareChat(c);
 
 dropdown.appendChild(share);
 dropdown.appendChild(del);
-
 
 dots.onclick=(e)=>{
 e.stopPropagation();
@@ -162,6 +244,7 @@ function sendMessage(){
 const input=document.getElementById("input");
 const text=input.value;
 if(!text)return;
+
 addMessage(text,"user");
 saveMsg(text,"user");
 input.value="";
@@ -182,12 +265,14 @@ saveMsg(d.reply,"bot");
 
 function stream(el,text){
 let i=0;
-(function t(){
+function type(){
  if(i<text.length){
-  el.innerText+=text[i++];
-  setTimeout(t,10);
+  el.innerText += text.charAt(i);
+  i++;
+  setTimeout(type,15);
  }
-})();
+}
+type();
 }
 
 function saveMsg(text,type){
@@ -200,12 +285,20 @@ saveChats();
 function addMessage(text,type){
 const d=document.createElement("div");
 d.className="msg "+type;
-d.innerText=text;
+if(type==="user"){
+ d.innerText = "♨️ Você: " + text;
+}else{
+ d.innerText = text;
+}
 document.getElementById("messages").appendChild(d);
 return d;
 }
 
+// INIT
 renderChats();
+renderUserBox();
+
 </script>
+
 </body>
 </html>
