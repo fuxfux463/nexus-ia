@@ -1,0 +1,42 @@
+body {
+margin:0;
+font-family:Arial, sans-serif;
+background:linear-gradient(135deg,#ff00cc,#3333ff,#00ffcc);
+color:#fff;
+}
+.app {
+display:flex;
+height:100vh;
+}
+.sidebar {
+width:260px;
+background:rgba(0,0,0,0.6);
+padding:20px;
+backdrop-filter:blur(10px);
+overflow:auto;
+}
+.chat {
+flex:1;
+display:flex;
+flex-direction:column;
+}
+#messages {
+flex:1;
+padding:20px;
+overflow:auto;
+}
+.msg {
+margin-bottom:15px;
+padding:10px;
+border-radius:10px;
+max-width:70%;
+}
+.user {background:#00ffcc;color:#000;margin-left:auto;}
+.bot {background:#222;}
+.inputArea {
+display:flex;
+padding:10px;
+background:#111;
+}
+input {
+.codigoBox {display:flex;}
