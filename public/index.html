@@ -8,10 +8,10 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
 * { box-sizing: border-box; margin:0; padding:0; }
-body{font-family:'Orbitron', monospace; height:100vh; overflow:hidden; position:relative; background:#0a0a0a; color:#fff; display:flex;}
+body{font-family:'Orbitron', monospace; height:100vh; overflow:hidden; position:relative; background:#0a0a0a; color:#fff; display:flex; transition:filter 0.3s ease, background 0.3s ease;}
 
 /* FUNDO ESPACIAL */
-.space-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-2;background:radial-gradient(ellipse at bottom,#1b2735 0%,#090a0f 100%);overflow:hidden;}
+.space-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-2;background:radial-gradient(ellipse at bottom,#1b2735 0%,#090a0f 100%);overflow:hidden; transition:background 0.5s ease;}
 .stars{position:absolute;top:0;left:0;width:100%;height:100%;}
 .star{position:absolute;background:#fff;border-radius:50%;animation:twinkle 3s infinite ease-in-out;}
 .star:nth-child(odd){animation-delay:0s;}
@@ -31,6 +31,7 @@ body{font-family:'Orbitron', monospace; height:100vh; overflow:hidden; position:
 @keyframes planetOrbit{0%{transform:translate(-50%,-50%) rotate(0deg) translateX(200px) rotate(0deg);}100%{transform:translate(-50%,-50%) rotate(360deg) translateX(200px) rotate(-360deg);}}
 @keyframes planetRotate{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
 
+/* SCROLL */
 ::-webkit-scrollbar{width:8px;}
 ::-webkit-scrollbar-track{background: rgba(255,255,255,0.05);}
 ::-webkit-scrollbar-thumb{background: linear-gradient(145deg, #007bff, #00d4ff); border-radius:4px;}
@@ -45,6 +46,7 @@ body{font-family:'Orbitron', monospace; height:100vh; overflow:hidden; position:
 .bulb{animation:pulseGlow 2s infinite; filter:drop-shadow(0 0 10px #00ff88);}
 @keyframes pulseGlow{0%,100%{transform:scale(1);filter:drop-shadow(0 0 10px #00ff88);}50%{transform:scale(1.1);filter:drop-shadow(0 0 20px #00ff88);}}
 
+/* MENU BOTÕES */
 .menu button{margin-top:8px;padding:12px 16px;background:linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)); color:#fff; border:1px solid rgba(255,255,255,0.2); cursor:pointer; font-size:14px; width:100%; border-radius:12px; transition:all 0.3s;}
 .menu button:hover{background:linear-gradient(145deg, rgba(0,123,255,0.3), rgba(0,123,255,0.1)); transform:translateY(-2px); box-shadow:0 10px 25px rgba(0,123,255,0.3);}
 
@@ -67,6 +69,31 @@ body{font-family:'Orbitron', monospace; height:100vh; overflow:hidden; position:
 .inputArea button:hover{transform:translateY(-3px) scale(1.05);}
 .stopBtn{background:linear-gradient(145deg,#ff5555,#cc0000); color:#fff; margin-left:8px;}
 
+/* OVERLAY LOGIN / REGISTER - FULLSCREEN COM BLUR */
+.overlay {
+    position: fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    display:none;
+    justify-content: center;
+    align-items: center;
+    z-index:10;
+}
+.overlay.active { display:flex; background: rgba(0,0,0,0.6); backdrop-filter:blur(6px); }
+.box {
+    width:100%;
+    max-width:400px;
+    padding:40px;
+    border-radius:16px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter:blur(20px);
+}
+
 /* RESPONSIVO */
 @media(max-width:768px){
     body{flex-direction:column;}
@@ -79,10 +106,11 @@ body{font-family:'Orbitron', monospace; height:100vh; overflow:hidden; position:
     .inputArea button{width:100%; margin-left:0;}
 }
 </style>
+</head>
 <body>
 
 <!-- FUNDO ESPACIAL -->
-<div class="space-bg">
+<div class="space-bg" id="spaceBg">
     <div class="stars" id="stars"></div>
     <div class="nebula nebula1"></div>
     <div class="nebula nebula2"></div>
@@ -115,8 +143,8 @@ body{font-family:'Orbitron', monospace; height:100vh; overflow:hidden; position:
 </div>
 
 <!-- LOGIN / REGISTER -->
-<div class="overlay" id="registerBox" style="display:none;">
-    <div class="box glass">
+<div class="overlay" id="registerBox">
+    <div class="box">
         <h3>🚀 Registro Nexus IA</h3>
         <input id="regUser" placeholder="Usuário">
         <input id="regPass" type="password" placeholder="Senha">
@@ -125,8 +153,8 @@ body{font-family:'Orbitron', monospace; height:100vh; overflow:hidden; position:
     </div>
 </div>
 
-<div class="overlay" id="loginBox" style="display:none;">
-    <div class="box glass">
+<div class="overlay" id="loginBox">
+    <div class="box">
         <h3>🌠 Acesse o Nexus</h3>
         <input id="user" placeholder="Usuário">
         <input id="pass" type="password" placeholder="Senha">
@@ -156,8 +184,18 @@ function createStars(){
 // ===== AUTH =====
 function checkAuth(){
     const users=JSON.parse(localStorage.getItem("users")||"[]");
-    if(users.length===0){ document.getElementById("registerBox").style.display="flex"; } 
-    else if(!localStorage.getItem("user")){ document.getElementById("loginBox").style.display="flex"; }
+    if(users.length===0){ showOverlay('registerBox'); } 
+    else if(!localStorage.getItem("user")){ showOverlay('loginBox'); }
+}
+
+function showOverlay(id){
+    document.getElementById(id).classList.add('active');
+    document.body.style.filter='blur(6px)';
+}
+
+function hideOverlay(id){
+    document.getElementById(id).classList.remove('active');
+    document.body.style.filter='none';
 }
 
 function register(){
@@ -169,8 +207,8 @@ function register(){
     users.push({user:u,pass:p});
     localStorage.setItem("users",JSON.stringify(users));
     alert("Registro realizado!");
-    document.getElementById('registerBox').style.display="none";
-    document.getElementById('loginBox').style.display="flex";
+    hideOverlay('registerBox');
+    showOverlay('loginBox');
 }
 
 function login(){
@@ -180,13 +218,13 @@ function login(){
     const found=users.find(x=>x.user===u&&x.pass===p);
     if(found){ 
         localStorage.setItem("user",u); 
-        document.getElementById('loginBox').style.display="none"; 
+        hideOverlay('loginBox');
         loadChats();
     } else{ document.getElementById('error').textContent="Usuário ou senha incorretos!"; }
 }
 
-function showRegister(){ document.getElementById('loginBox').style.display="none"; document.getElementById('registerBox').style.display="flex"; }
-function showLogin(){ document.getElementById('registerBox').style.display="none"; document.getElementById('loginBox').style.display="flex"; }
+function showRegister(){ hideOverlay('loginBox'); showOverlay('registerBox'); }
+function showLogin(){ hideOverlay('registerBox'); showOverlay('loginBox'); }
 
 // ===== CHAT =====
 let currentChatId=null;
@@ -196,6 +234,7 @@ const input=document.getElementById('input');
 const sendBtn=document.getElementById('sendBtn');
 const stopBtn=document.getElementById('stopBtn');
 const chatList=document.getElementById('chatList');
+const spaceBg=document.getElementById('spaceBg');
 
 function getChats(){ 
     const user=localStorage.getItem('user'); 
@@ -248,13 +287,15 @@ function clearChats(){
 function appendMessage(text,sender){
     const msg=document.createElement('div');
     msg.className='msg '+sender;
+    messagesDiv.appendChild(msg);
+    messagesDiv.scrollTop=messagesDiv.scrollHeight;
     if(sender==='bot'){
-        msg.innerHTML=''; messagesDiv.appendChild(msg); messagesDiv.scrollTop=messagesDiv.scrollHeight;
+        spaceBg.style.transition='background 0.2s';
+        spaceBg.style.background='radial-gradient(ellipse at bottom,#ff00ff 0%,#0a0a0a 100%)';
+        setTimeout(()=>{ spaceBg.style.background='radial-gradient(ellipse at bottom,#1b2735 0%,#090a0f 100%)'; },200);
         typeWriter(msg,text);
     } else {
         msg.innerHTML=marked.parse(text);
-        messagesDiv.appendChild(msg);
-        messagesDiv.scrollTop=messagesDiv.scrollHeight;
     }
 }
 
@@ -271,63 +312,41 @@ function typeWriter(el,text){
 }
 
 // ===== SEND MESSAGE =====
+sendBtn.onclick=sendMessage;
+input.addEventListener('keydown',e=>{ if(e.key==='Enter') sendMessage(); });
+
 async function sendMessage(){
     const t=input.value.trim();
     if(!t) return;
-    if(currentChatId===null) newChat();
     appendMessage(t,'user');
+    if(currentChatId===null) newChat();
     input.value=''; sendBtn.disabled=true;
 
-    try{
-        const lastBot=document.createElement('div'); lastBot.className='msg bot'; lastBot.textContent='Digitando...';
-        messagesDiv.appendChild(lastBot); messagesDiv.scrollTop=messagesDiv.scrollHeight;
-        stopBtn.style.display='inline-block';
-
-        // Simulação fetch API
-        const data=await fetch('/api/chat.js',{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({message:t})
-        }).then(res=>res.json());
-
-        clearInterval(typingInterval);
-        stopBtn.style.display='none';
-        lastBot.innerHTML='';
-        typeWriter(lastBot,data.reply||'Erro na resposta');
-        
-        // Salvar chat
+    // Simulação resposta bot
+    setTimeout(()=>{
+        const reply="IA: processando sua mensagem... 🚀";
+        appendMessage(reply,'bot');
         const chats=getChats();
         const chat=chats.find(c=>c.id===currentChatId);
-        if(chat){
-            chat.messages.push({sender:'user',text:t});
-            chat.messages.push({sender:'bot',text:data.reply||'Erro na resposta'});
-            saveChats(chats);
-        }
-
-    }catch(e){ console.error(e); alert("Erro ao enviar a mensagem"); } finally{ sendBtn.disabled=false; }
+        chat.messages.push({text:t,sender:'user'});
+        chat.messages.push({text:reply,sender:'bot'});
+        saveChats(chats);
+        sendBtn.disabled=false;
+    },500);
 }
 
-function stopTyping(){
-    clearInterval(typingInterval);
-    stopBtn.style.display='none';
-}
-
-sendBtn.onclick=sendMessage;
-stopBtn.onclick=stopTyping;
+stopBtn.onclick=function(){ clearInterval(typingInterval); stopBtn.style.display='none'; };
 
 // ===== STAR CREATION & AUTH INIT =====
 window.addEventListener('load', function() {
     createStars();
     checkAuth();
-    if(localStorage.getItem('user')){
-        loadChats();
-    }
+    if(localStorage.getItem('user')) loadChats();
 });
 
 function logout() {
-    localStorage.removeItem("user");      // remove login
-    localStorage.removeItem("chats_" + localStorage.getItem("user")); // opcional: limpa chats temporariamente
-    location.reload();                     // recarrega a página para voltar ao login
+    localStorage.removeItem("user");     
+    location.reload();                    
 }
 </script>
 
