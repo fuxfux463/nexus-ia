@@ -1,32 +1,81 @@
-// public/index.html
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NEXUS IA</title>
-<link rel="stylesheet" href="css/style.css">
+<style>
+body{margin:0;font-family:Arial;background:linear-gradient(135deg,#ff00cc,#3333ff,#00ffcc);color:#fff;display:flex;height:100vh}
+.sidebar{width:260px;background:rgba(0,0,0,0.6);padding:20px;backdrop-filter:blur(10px)}
+.chat{flex:1;display:flex;flex-direction:column}
+#messages{flex:1;padding:20px;overflow:auto}
+.msg{margin-bottom:15px;padding:10px;border-radius:10px;max-width:70%}
+.user{background:#00ffcc;color:#000;margin-left:auto}
+.bot{background:#222}
+.inputArea{display:flex;padding:10px;background:#111}
+input{flex:1;padding:12px;border:none;border-radius:8px}
+button{padding:12px;margin-left:5px;border:none;border-radius:8px;background:#00ffcc;cursor:pointer}
+.notify{position:fixed;top:20px;right:20px;background:#000;padding:20px;border-radius:10px;display:none}
+</style>
 </head>
 <body>
-<div class="app">
 <div class="sidebar">
 <h2>NEXUS</h2>
-<div id="chatList"></div>
 </div>
 <div class="chat">
 <div id="messages"></div>
 <div class="inputArea">
 <input id="input" placeholder="Digite sua mensagem...">
-<button id="sendBtn">Enviar</button>
+<button onclick="sendMessage()">Enviar</button>
 </div>
 </div>
-</div>
-<div id="notify" class="notify hidden">
+<div id="notify" class="notify">
 <h3>NEXUS INFORMA</h3>
-<p>Você precisa se registrar para salvar o seu histórico.</p>
-<p>Caso não efetue o registro, não poderá utilizar esse chat.</p>
-<button id="registerBtn">REGISTRAR ME</button>
+<p>Você precisa se registrar para usar o chat.</p>
+<button onclick="register()">REGISTRAR ME</button>
 </div>
-<script src="js/app.js"></script>
+<script>
+const API_KEY = "COLOQUE_SUA_KEY_AQUI";
+
+function sendMessage(){
+if(!localStorage.getItem("user")){
+document.getElementById("notify").style.display="block";
+return;
+}
+const input=document.getElementById("input");
+const text=input.value;
+addMessage(text,"user");
+input.value="";
+addMessage("🤖 Nexus está digitando...","bot");
+
+fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${API_KEY}`,{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({contents:[{parts:[{text:text}]}]})
+})
+.then(r=>r.json())
+.then(data=>{
+document.querySelectorAll(".bot")[document.querySelectorAll(".bot").length-1].remove();
+const reply=data.candidates?.[0]?.content?.parts?.[0]?.text||"Erro";
+addMessage(reply,"bot");
+});
+}
+
+function addMessage(text,type){
+const div=document.createElement("div");
+div.className="msg "+type;
+div.innerText=text;
+document.getElementById("messages").appendChild(div);
+}
+
+function register(){
+const email=prompt("Email:");
+const senha=prompt("Senha:");
+const codigo=Math.floor(10000000+Math.random()*90000000);
+alert("Seu código: "+codigo);
+localStorage.setItem("user",JSON.stringify({email,senha,codigo}));
+document.getElementById("notify").style.display="none";
+}
+</script>
 </body>
 </html>
