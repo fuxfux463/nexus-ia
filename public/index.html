@@ -315,7 +315,13 @@ sendBtn.onclick=sendMessage;
 stopBtn.onclick=stopTyping;
 
 // ===== STAR CREATION & AUTH INIT =====
-window.onload=function(){ createStars(); checkAuth(); }
+window.addEventListener('load', function() {
+    createStars();
+    checkAuth();
+    if(localStorage.getItem('user')){
+        loadChats();
+    }
+});
 </script>
 
 </body>
