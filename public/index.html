@@ -7,68 +7,166 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial;background:radial-gradient(circle at top,#0a0000,#000000 80%);color:#fff;display:flex;height:100vh;overflow:hidden}
-.sidebar{width:260px;background:rgba(20,0,0,0.8);padding:20px;border-right:1px solid rgba(255,0,0,0.2)}
+.sidebar{width:280px;background:rgba(15,0,0,0.95);padding:15px;border-right:1px solid rgba(255,0,0,0.15);display:flex;flex-direction:column}
+.logo{font-size:22px;font-weight:bold;color:#ff0033;margin-bottom:15px}
+.menu{display:flex;flex-direction:column;gap:5px;margin-bottom:15px}
+.menu button{background:transparent;border:1px solid rgba(255,0,0,0.1);color:#fff;padding:10px;border-radius:8px;text-align:left;cursor:pointer}
+.menu button:hover{background:rgba(255,0,0,0.2)}
+.search{margin-bottom:10px}
+.search input{width:100%;padding:8px;border-radius:6px;border:none;background:#0a0000;color:#fff}
+.chatList{flex:1;overflow:auto}
+.chatItem{padding:10px;border-radius:8px;margin-bottom:5px;background:rgba(255,0,0,0.05);display:flex;justify-content:space-between;align-items:center}
+.chatItem:hover{background:rgba(255,0,0,0.2)}
+.chatTitle{flex:1;cursor:pointer}
+.menuDots{cursor:pointer;padding:5px}
+.dropdown{position:absolute;background:#0a0000;border:1px solid rgba(255,0,0,0.2);border-radius:6px;padding:5px;display:none;flex-direction:column}
+.dropdown button{background:none;border:none;color:#fff;padding:5px;text-align:left;cursor:pointer}
+.dropdown button:hover{background:rgba(255,0,0,0.2)}
+.userBox{margin-top:10px;padding:10px;background:rgba(255,0,0,0.1);border-radius:8px;font-size:12px}
 .chat{flex:1;display:flex;flex-direction:column;position:relative}
 #messages{flex:1;padding:20px;overflow:auto}
-.msg{margin-bottom:15px;padding:12px;border-radius:12px;max-width:70%;animation:fadeIn .3s ease}
+.msg{margin-bottom:15px;padding:12px;border-radius:12px;max-width:70%;animation:fadeIn .3s ease;white-space:pre-line}
 .user{background:#ff0033;color:#fff;margin-left:auto}
 .bot{background:#1a0000;border:1px solid rgba(255,0,0,0.2)}
 .inputArea{display:flex;padding:10px;background:#050000;border-top:1px solid rgba(255,0,0,0.2)}
 input{flex:1;padding:12px;border:none;border-radius:8px;background:#0a0000;color:#fff}
 button{padding:12px;margin-left:5px;border:none;border-radius:8px;background:#ff0033;color:#fff;cursor:pointer;transition:.2s}
 button:hover{transform:scale(1.05)}
-.notify, .registerModal{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.4s}
-.notify.active, .registerModal.active{opacity:1;pointer-events:auto}
-.card{background:#0a0000;padding:30px;border-radius:15px;box-shadow:0 0 30px rgba(255,0,0,0.2);animation:slideUp .4s ease}
-.card input{margin-bottom:10px;width:100%}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
 </style>
 </head>
 <body>
 <div class="sidebar">
-<h2 style="color:#ff0033">NEXUS</h2>
+<div class="logo">NEXUS</div>
+<div class="menu">
+<button onclick="newChat()">➕ Novo Chat</button>
+<button onclick="clearChats()">🧹 Limpar Chats</button>
 </div>
+<div class="search">
+<input placeholder="Buscar chat..." oninput="searchChat(this.value)">
+</div>
+<div class="chatList" id="chatList"></div>
+<div class="userBox" id="userBox">Não logado</div>
+</div>
+
 <div class="chat">
 <div id="messages"></div>
 <div class="inputArea">
 <input id="input" placeholder="Digite sua mensagem...">
 <button onclick="sendMessage()">Enviar</button>
 </div>
-
-<div id="notify" class="notify">
-<div class="card">
-<h3>NEXUS INFORMA</h3>
-<p>Você precisa se registrar para usar o chat</p>
-<button onclick="openRegister()">REGISTRAR</button>
-</div>
-</div>
-
-<div id="register" class="registerModal">
-<div class="card">
-<h2>Registro</h2>
-<input id="email" placeholder="Email">
-<input id="senha" type="password" placeholder="Senha">
-<input id="codigo" readonly placeholder="Código">
-<button onclick="gerarCodigo()">Gerar Código</button>
-<p style="font-size:12px">Anote o código para recuperação</p>
-<button onclick="registrar()">Criar Conta</button>
-</div>
-</div>
-
 </div>
 
 <script>
-function sendMessage(){
-if(!localStorage.getItem("user")){
-document.getElementById("notify").classList.add("active");
-return;
+let currentChat = null;
+let chats = JSON.parse(localStorage.getItem("chats") || "[]");
+
+function saveChats(){
+localStorage.setItem("chats", JSON.stringify(chats));
+renderChats();
 }
+
+function renderChats(filter=""){
+const list = document.getElementById("chatList");
+list.innerHTML = "";
+chats
+.filter(c=>c.title.toLowerCase().includes(filter.toLowerCase()))
+.forEach((c,i)=>{
+const div=document.createElement("div");
+div.className="chatItem";
+
+const title=document.createElement("div");
+title.className="chatTitle";
+title.innerText=c.title;
+title.onclick=()=>loadChat(i);
+
+const dots=document.createElement("div");
+dots.className="menuDots";
+dots.innerText="⋯";
+
+const dropdown=document.createElement("div");
+dropdown.className="dropdown";
+
+const del=document.createElement("button");
+del.innerText="Excluir chat";
+del.onclick=()=>deleteChat(i);
+
+const share=document.createElement("button");
+share.innerText="Compartilhar";
+share.onclick=()=>shareChat(c);
+
+dropdown.appendChild(share);
+dropdown.appendChild(del);
+
+
+dots.onclick=(e)=>{
+e.stopPropagation();
+closeAllDropdowns();
+dropdown.style.display="flex";
+dropdown.style.position="absolute";
+dropdown.style.right="10px";
+dropdown.style.top=(dots.offsetTop+20)+"px";
+};
+
+window.addEventListener("click",()=>dropdown.style.display="none");
+
+div.appendChild(title);
+div.appendChild(dots);
+div.appendChild(dropdown);
+list.appendChild(div);
+});
+}
+
+function closeAllDropdowns(){
+document.querySelectorAll(".dropdown").forEach(d=>d.style.display="none");
+}
+
+function deleteChat(index){
+chats.splice(index,1);
+saveChats();
+document.getElementById("messages").innerHTML="";
+}
+
+function shareChat(chat){
+const text = chat.messages.map(m=>m.type+": "+m.text).join("\n");
+navigator.clipboard.writeText(text);
+alert("Chat copiado!");
+}
+
+function searchChat(val){
+renderChats(val);
+}
+
+function newChat(){
+currentChat = {
+ title:"Novo Chat",
+ messages:[{type:"bot",text:"⛏️⛏️ Criado e atualizado por Yudi. Sempre mande sugestões. Vamos lá! 🌀"}]
+};
+chats.unshift(currentChat);
+saveChats();
+loadChat(0);
+}
+
+function clearChats(){
+chats=[];
+saveChats();
+}
+
+function loadChat(index){
+currentChat = chats[index];
+document.getElementById("messages").innerHTML="";
+currentChat.messages.forEach(m=>addMessage(m.text,m.type));
+}
+
+function sendMessage(){
 const input=document.getElementById("input");
 const text=input.value;
+if(!text)return;
 addMessage(text,"user");
+saveMsg(text,"user");
 input.value="";
-addMessage("🤖 Nexus está digitando...","bot");
+
+const el=addMessage("","bot");
 
 fetch("/api/chat",{
 method:"POST",
@@ -76,37 +174,38 @@ headers:{"Content-Type":"application/json"},
 body:JSON.stringify({message:text})
 })
 .then(r=>r.json())
-.then(data=>{
-const bots = document.querySelectorAll(".bot");
-bots[bots.length - 1].remove();addMessage(data.reply,"bot");
+.then(d=>{
+stream(el,d.reply);
+saveMsg(d.reply,"bot");
 });
 }
 
+function stream(el,text){
+let i=0;
+(function t(){
+ if(i<text.length){
+  el.innerText+=text[i++];
+  setTimeout(t,10);
+ }
+})();
+}
+
+function saveMsg(text,type){
+if(!currentChat)newChat();
+currentChat.messages.push({text,type});
+if(currentChat.messages.length===2)currentChat.title=text.slice(0,25);
+saveChats();
+}
+
 function addMessage(text,type){
-const div=document.createElement("div");
-div.className="msg "+type;
-div.innerText=text;
-document.getElementById("messages").appendChild(div);
+const d=document.createElement("div");
+d.className="msg "+type;
+d.innerText=text;
+document.getElementById("messages").appendChild(d);
+return d;
 }
 
-function openRegister(){
-document.getElementById("notify").classList.remove("active");
-document.getElementById("register").classList.add("active");
-}
-
-function gerarCodigo(){
-const code=Math.floor(10000000+Math.random()*90000000);
-document.getElementById("codigo").value=code;
-}
-
-function registrar(){
-const email=document.getElementById("email").value;
-const senha=document.getElementById("senha").value;
-const codigo=document.getElementById("codigo").value;
-if(!email||!senha||!codigo)return;
-localStorage.setItem("user",JSON.stringify({email,senha,codigo}));
-document.getElementById("register").classList.remove("active");
-}
+renderChats();
 </script>
 </body>
 </html>
